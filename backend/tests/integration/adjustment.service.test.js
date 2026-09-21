@@ -61,7 +61,7 @@ afterEach(async () => {
 
     return wallet;
     }
-}
+
 
 describe("adjustment.service - credit", () => {
     test("credits the wallet and posts a matching ledger entry", async () => {
