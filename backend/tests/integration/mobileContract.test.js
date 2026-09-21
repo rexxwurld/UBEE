@@ -137,7 +137,11 @@ describe("UBee mobile contract", () => {
         const submitRes = await request(app)
             .post("/api/v1/kyc/submit")
             .set("Authorization", `Bearer ${accessToken}`)
-            .send({ bvn: "12345678901", nin: null, dateOfBirth: "2000-01-01" });
+            .send({
+    bvn: "12345678901",
+    nin: "98765432109",
+    dateOfBirth: "2000-01-01"
+});
         expect(submitRes.status).toBe(200);
         expect(submitRes.body.status).toBe(true);
         expect(submitRes.body.data).toHaveProperty("kycStatus");
