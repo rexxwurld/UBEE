@@ -48,11 +48,25 @@ async function createTestUserWithWallet(balance = 0, kycTier = "tier2") {
         bvnHash: crypto.randomBytes(32).toString("hex"),
         ninHash: crypto.randomBytes(32).toString("hex")
     });
+
+
     const wallet = await Wallet.create({
-        userId: user._id,
-        accountNumber: `10${Math.floor(1000000 + Math.random() * 8999999)}`,
-        balance
+    userId: user._id,
+    accountNumber: `10${Math.floor(1000000 + Math.random() * 8999999)}`,
+    balance: 0
+});
+
+if (balance > 0) {
+    await LedgerEntry.create({
+        entryGroup: `test-initial-${wallet._id}`,
+        wallet: wallet._id,
+        direction: "credit",
+        amount: balance,
+        sourceType: "deposit",
+        sourceRef: `test-initial-${wallet._id}`,
+        description: "Test fixture initial funding"
     });
+}
     return { user, wallet };
 }
 
