@@ -44,7 +44,9 @@ async function createTestUserWithWallet(balance = 0, kycTier = "tier2") {
         email: `test-${crypto.randomBytes(4).toString("hex")}@example.com`,
         phone: `080${Math.floor(10000000 + Math.random() * 89999999)}`,
         password: "irrelevant-for-these-tests",
-        kycTier
+        kycTier,
+        bvnHash: crypto.randomBytes(32).toString("hex"),
+        ninHash: crypto.randomBytes(32).toString("hex")
     });
     const wallet = await Wallet.create({
         userId: user._id,
