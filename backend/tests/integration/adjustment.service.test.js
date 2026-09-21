@@ -44,7 +44,7 @@ afterEach(async () => {
     async function createTestWallet(balance = 0) {
     const wallet = await Wallet.create({
         accountNumber: `10${Math.floor(1000000 + Math.random() * 8999999)}`,
-        balance: 0
+        balance
     });
 
     if (balance > 0) {
