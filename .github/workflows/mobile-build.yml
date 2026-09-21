@@ -33,7 +33,7 @@ jobs:
         run: dotnet build mobile/UBee.App.csproj -f net10.0-android -c Release
 
   ios:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     runs-on: macos-latest
 
     steps:
