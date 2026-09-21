@@ -23,7 +23,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           # No package-lock.json is committed yet (npm ci needs one) - run
           # `npm install` once locally in backend/ and commit the lockfile
           # it generates, then switch this to `cache: npm` + `npm ci` for
