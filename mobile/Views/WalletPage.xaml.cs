@@ -1,0 +1,1 @@
+using UBee.App.ViewModels; namespace UBee.App.Views; public partial class WalletPage:ContentPage{readonly WalletViewModel vm;public WalletPage(WalletViewModel vm){InitializeComponent();this.vm=vm;BindingContext=vm;}protected override async void OnAppearing(){base.OnAppearing();await vm.LoadAsync();}}

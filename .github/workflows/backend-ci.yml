@@ -1,0 +1,48 @@
+name: backend-ci
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          # No package-lock.json is committed yet (npm ci needs one) - run
+          # `npm install` once locally in backend/ and commit the lockfile
+          # it generates, then switch this to `cache: npm` + `npm ci` for
+          # faster, reproducible installs.
+
+      - name: Install dependencies
+        run: npm install
+
+      # node --test tests/unit/*.test.js - no DB needed
+      - name: Unit tests
+        run: npm run test
+
+      # jest tests/integration --runInBand --forceExit
+      # Uses mongodb-memory-server (MongoMemoryReplSet) - downloads its own
+      # mongod binary at runtime, so this needs outbound network, which
+      # GitHub-hosted runners have (unlike the sandbox this repo was
+      # originally assembled in - see backend/tests/README.md).
+      # No env vars needed here - every integration test file sets its own
+      # FIELD_ENCRYPTION_KEY/JWT_SECRET/etc before requiring src/app.js
+      # (see the top of mobileContract.test.js / adjustment.service.test.js).
+      - name: Integration tests (incl. mobile contract test)
+        run: npm run test:integration

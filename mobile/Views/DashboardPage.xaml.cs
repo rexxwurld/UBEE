@@ -1,0 +1,1 @@
+using UBee.App.ViewModels; namespace UBee.App.Views; public partial class DashboardPage:ContentPage{readonly DashboardViewModel vm;public DashboardPage(DashboardViewModel vm){InitializeComponent();this.vm=vm;BindingContext=vm;}protected override async void OnAppearing(){base.OnAppearing();await vm.LoadAsync();}}

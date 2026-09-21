@@ -1,0 +1,1 @@
+using UBee.App.ViewModels; namespace UBee.App.Views; public partial class TransactionsPage:ContentPage{readonly TransactionsViewModel vm;public TransactionsPage(TransactionsViewModel vm){InitializeComponent();BindingContext=vm;}protected override async void OnAppearing(){base.OnAppearing();await vm.LoadAsync();}}

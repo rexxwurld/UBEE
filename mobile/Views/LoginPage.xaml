@@ -1,0 +1,13 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="UBee.App.Views.LoginPage" Title="Sign in">
+<ScrollView><VerticalStackLayout Padding="24,60" Spacing="18">
+<Label Text="U-BEE" FontSize="38" TextColor="{StaticResource Primary}" HorizontalOptions="Center"/><Label Text="Secure banking, built for everyday life." TextColor="{StaticResource TextSecondary}" HorizontalOptions="Center" Margin="0,-10,0,18"/>
+<Label Text="Welcome back" FontSize="28"/><Label Text="Sign in to access your wallet and transfers." TextColor="{StaticResource TextSecondary}"/>
+<Label Text="Email"/><Entry Placeholder="you@example.com" Keyboard="Email" Text="{Binding Email}"/>
+<Label Text="Password"/><Entry Placeholder="Enter password" IsPassword="True" Text="{Binding Password}"/>
+<Label Text="{Binding ErrorMessage}" TextColor="{StaticResource Danger}" IsVisible="{Binding HasError}"/>
+<Button Text="Login" Style="{StaticResource PrimaryButton}" Command="{Binding LoginCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"/>
+<Button Text="Forgot password?" BackgroundColor="Transparent" TextColor="{StaticResource Primary}" Command="{Binding GoForgotCommand}"/>
+<BoxView HeightRequest="1" Color="{StaticResource Border}"/>
+<Button Text="Create an account" Style="{StaticResource SecondaryButton}" Command="{Binding GoRegisterCommand}"/>
+<ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+</VerticalStackLayout></ScrollView></ContentPage>

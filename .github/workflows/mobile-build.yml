@@ -1,0 +1,60 @@
+name: mobile-build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mobile/**"
+      - ".github/workflows/mobile-build.yml"
+  pull_request:
+    paths:
+      - "mobile/**"
+      - ".github/workflows/mobile-build.yml"
+  workflow_dispatch: {}
+
+jobs:
+  android:
+    # Android build works on any OS the MAUI workload supports; windows-latest
+    # is used since it also covers a future net10.0-windows target for free.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Install MAUI workload
+        run: dotnet workload install maui --source https://api.nuget.org/v3/index.json
+
+      - name: Restore
+        run: dotnet restore mobile/UBee.App.csproj
+
+      # Compile-only gate (no signing config in this repo) - fails the build
+      # on the same XML/C# errors `dotnet build` would catch locally, without
+      # needing a keystore or provisioning profile in CI.
+      - name: Build (Android)
+        run: dotnet build mobile/UBee.App.csproj -f net10.0-android -c Release
+
+  ios:
+    # iOS/MacCatalyst needs Xcode, so macos-latest specifically. Only runs
+    # on a manual trigger (Actions tab -> Run workflow) since it's the
+    # slowest, most failure-prone leg and you may not have an Apple
+    # developer account wired in yet.
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Install MAUI workload
+        run: dotnet workload install maui --source https://api.nuget.org/v3/index.json
+
+      - name: Restore
+        run: dotnet restore mobile/UBee.App.csproj
+
+      - name: Build (iOS)
+        run: dotnet build mobile/UBee.App.csproj -f net10.0-ios -c Release

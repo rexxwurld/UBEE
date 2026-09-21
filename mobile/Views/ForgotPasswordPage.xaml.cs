@@ -1,0 +1,1 @@
+using UBee.App.ViewModels; namespace UBee.App.Views; public partial class ForgotPasswordPage:ContentPage{public ForgotPasswordPage(ForgotPasswordViewModel vm){InitializeComponent();BindingContext=vm;}}

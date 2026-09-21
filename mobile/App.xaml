@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:UBee.App"
+             x:Class="UBee.App.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <local:InverseBoolConverter x:Key="InverseBoolConverter"/>
+            <Color x:Key="Primary">#2457D6</Color>
+            <Color x:Key="PrimaryDark">#163B96</Color>
+            <Color x:Key="Background">#F7F8FC</Color>
+            <Color x:Key="Card">#FFFFFF</Color>
+            <Color x:Key="TextPrimary">#172033</Color>
+            <Color x:Key="TextSecondary">#687083</Color>
+            <Color x:Key="Success">#16855B</Color>
+            <Color x:Key="Danger">#C93636</Color>
+            <Color x:Key="Border">#E5E8EF</Color>
+            <Style TargetType="ContentPage">
+                <Setter Property="BackgroundColor" Value="{StaticResource Background}" />
+            </Style>
+            <Style TargetType="Label">
+                <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
+                <Setter Property="FontFamily" Value="OpenSansRegular" />
+            </Style>
+            <Style TargetType="Button">
+                <Setter Property="CornerRadius" Value="12" />
+                <Setter Property="Padding" Value="16,12" />
+                <Setter Property="FontFamily" Value="OpenSansSemibold" />
+            </Style>
+            <Style x:Key="PrimaryButton" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                <Setter Property="TextColor" Value="White" />
+            </Style>
+            <Style x:Key="SecondaryButton" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="White" />
+                <Setter Property="TextColor" Value="{StaticResource Primary}" />
+                <Setter Property="BorderColor" Value="{StaticResource Border}" />
+                <Setter Property="BorderWidth" Value="1" />
+            </Style>
+            <Style TargetType="Entry">
+                <Setter Property="BackgroundColor" Value="White" />
+                <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
+                <Setter Property="PlaceholderColor" Value="{StaticResource TextSecondary}" />
+                <Setter Property="HeightRequest" Value="52" />
+            </Style>
+            <Style TargetType="Picker">
+                <Setter Property="BackgroundColor" Value="White" />
+                <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
+                <Setter Property="HeightRequest" Value="52" />
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

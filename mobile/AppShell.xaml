@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:views="clr-namespace:UBee.App.Views"
+       x:Class="UBee.App.AppShell"
+       Shell.FlyoutBehavior="Disabled">
+    <ShellContent Route="login" ContentTemplate="{DataTemplate views:LoginPage}" />
+    <ShellContent Route="register" ContentTemplate="{DataTemplate views:RegisterPage}" />
+    <ShellContent Route="forgot-password" ContentTemplate="{DataTemplate views:ForgotPasswordPage}" />
+    <ShellContent Route="verify-otp" ContentTemplate="{DataTemplate views:VerifyOtpPage}" />
+    <ShellContent Route="reset-password" ContentTemplate="{DataTemplate views:ResetPasswordPage}" />
+
+    <TabBar Route="main" FlyoutItemIsVisible="False">
+        <ShellContent Route="dashboard" Title="Home" Icon="home.svg" ContentTemplate="{DataTemplate views:DashboardPage}" />
+        <ShellContent Route="wallet" Title="Wallet" Icon="wallet.svg" ContentTemplate="{DataTemplate views:WalletPage}" />
+        <ShellContent Route="transfer" Title="Send" Icon="send.svg" ContentTemplate="{DataTemplate views:TransferPage}" />
+        <ShellContent Route="transactions" Title="History" Icon="history.svg" ContentTemplate="{DataTemplate views:TransactionsPage}" />
+        <ShellContent Route="settings" Title="Settings" Icon="settings.svg" ContentTemplate="{DataTemplate views:SettingsPage}" />
+    </TabBar>
+</Shell>

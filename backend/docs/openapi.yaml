@@ -1,0 +1,637 @@
+openapi: 3.0.3
+info:
+  title: U-BEE API
+  version: "1.0"
+  description: |
+    Closes the audit's §17 finding ("no OpenAPI/Swagger spec anywhere
+    in the repo; the only documentation is the endpoint list in
+    README.md, which is already known to be inaccurate/aspirational in
+    places").
+
+    SCOPE: the customer-facing surface (auth, MFA, sessions, wallet,
+    transactions, KYC, disputes, device registration) is documented
+    completely below - this is what the .NET MAUI mobile app actually
+    needs. The admin surface (accumulated across many phases - pool
+    accounts, adjustments, partners, reconciliation, ops investigation,
+    disputes-admin, etc.) is represented by one fully-worked example
+    per pattern (list/get/create/update) rather than exhaustively, with
+    a note at the end of this file. Extend the `admin` tag's paths
+    following the same pattern as the worked examples when a specific
+    admin endpoint needs full documentation.
+
+    Every request/response shape below reflects the ACTUAL zod
+    validation schemas and controller response shapes in the codebase
+    as of Phase 10, not an aspirational API design - see each
+    schema/route file referenced in the `x-source` extension on each
+    path for the exact file to check if this spec and the code ever
+    drift apart.
+servers:
+  - url: /api/v1
+    description: All routes are mounted under this prefix (see src/app.js)
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Access token from POST /auth/login or POST /auth/token/refresh.
+        A native/mobile client should use this, NOT the httpOnly cookie
+        the same endpoints also set (that cookie exists only for
+        backward compatibility with the original web client - see
+        src/modules/auth/auth.controller.js).
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        status:
+          type: boolean
+          example: false
+        message:
+          type: string
+
+    ValidationError:
+      type: object
+      properties:
+        status:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: validation_failed
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              in:
+                type: string
+                enum: [body, params, query]
+              field:
+                type: string
+              message:
+                type: string
+
+    User:
+      type: object
+      properties:
+        _id: { type: string }
+        fullname: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string }
+        mfaEnabled: { type: boolean }
+        kycTier: { type: string, enum: [tier1, tier2, tier3] }
+        kycStatus: { type: string, enum: [unverified, submitted, verified, rejected] }
+        accountState: { type: string, enum: [active, frozen, dormant, closed] }
+        createdAt: { type: string, format: date-time }
+
+    Wallet:
+      type: object
+      properties:
+        _id: { type: string }
+        accountNumber: { type: string }
+        balance: { type: number, description: "NGN, integer minor-unit-free at this layer - see the ledger for the source of truth" }
+
+    Transaction:
+      type: object
+      properties:
+        _id: { type: string }
+        amount: { type: number }
+        description: { type: string, nullable: true }
+        type: { type: string, enum: [debit, credit] }
+        status: { type: string, enum: [pending, success, failed] }
+        direction: { type: string, enum: [sent, received] }
+        bank: { type: string, nullable: true }
+        accountNumber: { type: string }
+        sender: { type: object, nullable: true }
+        receiver: { type: object, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+    Dispute:
+      type: object
+      properties:
+        _id: { type: string }
+        reference: { type: string, example: "DSP-MUACDXC7-6F2B0F" }
+        relatedType: { type: string, enum: [transaction, deposit, payout, refund, other] }
+        relatedEntityRef: { type: string, nullable: true }
+        subject: { type: string }
+        description: { type: string }
+        status: { type: string, enum: [open, investigating, resolved, rejected] }
+        resolutionNotes: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+paths:
+  /auth/register:
+    post:
+      tags: [auth]
+      summary: Create a customer account (and its wallet)
+      x-source: src/modules/auth/auth.routes.js, auth.validation.js:registerBody
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fullname, email, phone, password]
+              properties:
+                fullname: { type: string }
+                email: { type: string, format: email }
+                phone: { type: string, description: "10-15 digits" }
+                password: { type: string, minLength: 8 }
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  user: { $ref: "#/components/schemas/User" }
+        "400": { description: Bad request, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "422": { description: Validation failed, content: { application/json: { schema: { $ref: "#/components/schemas/ValidationError" } } } }
+        "429": { description: Too many attempts (rate limited) }
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Log in. Returns bearer tokens (mobile) and sets a cookie (web). May return an MFA challenge instead.
+      x-source: src/modules/auth/auth.controller.js
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        "200":
+          description: |
+            Either a completed login (accessToken/refreshToken present)
+            OR an MFA challenge (mfaRequired: true, no tokens yet - see
+            POST /auth/login/mfa-verify).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      message: { type: string }
+                      user: { $ref: "#/components/schemas/User" }
+                      accessToken: { type: string }
+                      refreshToken: { type: string }
+                      expiresIn: { type: integer, description: "seconds" }
+                  - type: object
+                    properties:
+                      mfaRequired: { type: boolean, example: true }
+                      challengeId: { type: string }
+                      expiresAt: { type: string, format: date-time }
+        "400": { description: Invalid credentials }
+        "429": { description: Too many attempts (rate limited) }
+
+  /auth/login/mfa-verify:
+    post:
+      tags: [auth]
+      summary: Complete a login that returned mfaRequired:true
+      x-source: src/modules/auth/auth.controller.js:loginMfaVerify
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [challengeId, code]
+              properties:
+                challengeId: { type: string }
+                code: { type: string, pattern: "^[0-9]{6}$" }
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  user: { $ref: "#/components/schemas/User" }
+                  accessToken: { type: string }
+                  refreshToken: { type: string }
+                  expiresIn: { type: integer }
+        "400": { description: Invalid or expired code }
+
+  /auth/token/refresh:
+    post:
+      tags: [auth]
+      summary: Exchange a refresh token for a new access+refresh pair (rotation)
+      x-source: src/modules/session/session.service.js:rotateRefreshToken
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        "200":
+          description: New token pair. The refresh token used in this call is now revoked - store the NEW one.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  accessToken: { type: string }
+                  refreshToken: { type: string }
+                  expiresIn: { type: integer }
+        "401": { description: Refresh token invalid, expired, or already used }
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Log out (clears cookie; revokes refreshToken if provided)
+      x-source: src/modules/auth/auth.controller.js:logout
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken: { type: string, description: "Optional - if provided, that specific session is revoked server-side" }
+      responses:
+        "200": { description: Logged out }
+
+  /auth/me:
+    get:
+      tags: [auth]
+      summary: Current authenticated user (from the token, not a DB lookup)
+      x-source: src/modules/auth/auth.routes.js
+      responses:
+        "200": { description: OK }
+        "401": { description: No/invalid token }
+
+  /auth/mfa/enable:
+    post:
+      tags: [mfa]
+      summary: Start enabling MFA - sends a one-time proof-of-delivery OTP
+      x-source: src/modules/mfa/mfa.controller.js:enable
+      responses:
+        "200":
+          description: OTP sent (or, in production with no real provider connected, this call fails loudly - see src/modules/otp/otp.service.js)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      challengeId: { type: string }
+                      expiresAt: { type: string, format: date-time }
+
+  /auth/mfa/enable/verify:
+    post:
+      tags: [mfa]
+      summary: Confirm the OTP from /auth/mfa/enable - actually turns MFA on
+      x-source: src/modules/mfa/mfa.controller.js:enableVerify
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [challengeId, code]
+              properties:
+                challengeId: { type: string }
+                code: { type: string, pattern: "^[0-9]{6}$" }
+      responses:
+        "200": { description: MFA enabled }
+        "400": { description: Invalid/expired code }
+
+  /auth/mfa/disable:
+    post:
+      tags: [mfa]
+      summary: Disable MFA (requires re-entering the password)
+      x-source: src/modules/mfa/mfa.controller.js:disable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                password: { type: string }
+      responses:
+        "200": { description: MFA disabled }
+        "400": { description: Wrong password }
+
+  /auth/sessions:
+    get:
+      tags: [sessions]
+      summary: List this user's active sessions/devices
+      x-source: src/modules/session/session.controller.js:listSessions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: boolean }
+                  count: { type: integer }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        sessionId: { type: string }
+                        deviceInfo: { type: string }
+                        ip: { type: string, nullable: true }
+                        createdAt: { type: string, format: date-time }
+                        lastUsedAt: { type: string, format: date-time }
+                        expiresAt: { type: string, format: date-time }
+
+  /auth/sessions/revoke-all:
+    post:
+      tags: [sessions]
+      summary: "Log out everywhere - revokes every active session"
+      x-source: src/modules/session/session.controller.js:revokeAllSessions
+      responses:
+        "200": { description: All sessions revoked }
+
+  /auth/sessions/{sessionId}:
+    delete:
+      tags: [sessions]
+      summary: Revoke one specific session (e.g. a lost/stolen device)
+      x-source: src/modules/session/session.controller.js:revokeSession
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Session revoked }
+        "400": { description: Not found or already revoked }
+
+  /wallet:
+    get:
+      tags: [wallet]
+      summary: Get the current user's wallet (account number, balance)
+      x-source: src/modules/wallet/wallet.controller.js
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: boolean }
+                  data: { $ref: "#/components/schemas/Wallet" }
+
+  /transaction:
+    get:
+      tags: [transaction]
+      summary: Transaction history, cursor-paginated
+      x-source: src/modules/transaction/transaction.controller.js:getHistory
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, maximum: 100, default: 20 }
+        - name: before
+          in: query
+          description: A transaction _id from a previous page's nextCursor
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: boolean }
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/Transaction" }
+                  nextCursor: { type: string, nullable: true, description: "Pass as `before` to get the next page; null when there are no more results" }
+
+  /transaction/transfer:
+    post:
+      tags: [transaction]
+      summary: Internal (RexxPay-to-RexxPay) wallet transfer
+      x-source: src/modules/transaction/transaction.controller.js:transfer, transaction.validation.js:transferBody
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          description: Alternative to sending idempotencyKey in the body
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [accountNumber, amount]
+              properties:
+                accountNumber: { type: string, description: "Destination RexxPay account number" }
+                amount: { type: number, exclusiveMinimum: 0 }
+                description: { type: string }
+                bank: { type: string, description: "Informational only for internal transfers" }
+                idempotencyKey: { type: string }
+      responses:
+        "201": { description: Transfer successful }
+        "200": { description: "Duplicate replay - idempotencyKey already used, original result returned" }
+        "400": { description: "Invalid request, limit exceeded, account not active, or self-transfer" }
+
+  /kyc/submit:
+    post:
+      tags: [kyc]
+      summary: Submit BVN/NIN for KYC review (does not auto-upgrade tier - see kyc.service.js)
+      x-source: src/modules/kyc/kyc.controller.js:submit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bvn: { type: string, pattern: "^[0-9]{11}$" }
+                nin: { type: string, pattern: "^[0-9]{11}$" }
+                dateOfBirth: { type: string, format: date }
+      responses:
+        "200": { description: Submitted, pending admin verification }
+        "422": { description: Validation failed (e.g. neither bvn nor nin provided) }
+
+  /kyc/status:
+    get:
+      tags: [kyc]
+      summary: Current KYC tier/status
+      x-source: src/modules/kyc/kyc.controller.js:getStatus
+      responses:
+        "200": { description: OK }
+
+  /disputes:
+    post:
+      tags: [disputes]
+      summary: Raise a dispute
+      x-source: src/modules/dispute/dispute.controller.js:raise
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subject, description]
+              properties:
+                relatedType: { type: string, enum: [transaction, deposit, payout, refund, other] }
+                relatedEntityRef: { type: string }
+                subject: { type: string, maxLength: 200 }
+                description: { type: string, maxLength: 5000 }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: boolean }
+                  data: { $ref: "#/components/schemas/Dispute" }
+    get:
+      tags: [disputes]
+      summary: List my disputes
+      x-source: src/modules/dispute/dispute.controller.js:listMine
+      responses:
+        "200": { description: OK }
+
+  /disputes/{reference}:
+    get:
+      tags: [disputes]
+      summary: Get one of my disputes by reference
+      x-source: src/modules/dispute/dispute.controller.js:getMine
+      parameters:
+        - name: reference
+          in: path
+          required: true
+          schema: { type: string, example: "DSP-MUACDXC7-6F2B0F" }
+      responses:
+        "200": { description: OK }
+        "404": { description: Not found }
+
+  /notifications/devices:
+    post:
+      tags: [notifications]
+      summary: Register a device for push notifications
+      x-source: src/modules/deviceToken/deviceToken.controller.js:registerDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, platform]
+              properties:
+                token: { type: string, description: "FCM/APNs/web-push token from the client SDK" }
+                platform: { type: string, enum: [ios, android, web] }
+      responses:
+        "201": { description: Registered }
+
+  /notifications/devices/{token}:
+    delete:
+      tags: [notifications]
+      summary: Unregister a device
+      x-source: src/modules/deviceToken/deviceToken.controller.js:unregisterDevice
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Unregistered }
+
+  # ===================================================================
+  # ADMIN API - represented, not exhaustive. See this file's top-level
+  # description for why, and the list of admin route files at the
+  # bottom of this document for what to document next following this
+  # same pattern.
+  # ===================================================================
+
+  /admin/customers/search:
+    get:
+      tags: [admin]
+      summary: "[ADMIN] Search customers by email/phone/account number"
+      x-source: src/modules/ops/ops.controller.js:searchCustomers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema: { type: string, minLength: 2 }
+      responses:
+        "200": { description: OK }
+        "401": { description: Admin authentication required }
+        "403": { description: Insufficient role }
+
+  /admin/adjustments:
+    post:
+      tags: [admin]
+      summary: "[ADMIN] Direct balance adjustment (role: ops; disabled entirely if REQUIRE_MAKER_CHECKER=true - use /admin/approvals instead)"
+      x-source: src/modules/adjustment/adjustment.controller.js, adjustment.validation.js
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [accountNumber, direction, amount, reference, reason]
+              properties:
+                accountNumber: { type: string }
+                direction: { type: string, enum: [credit, debit] }
+                amount: { type: integer, exclusiveMinimum: 0 }
+                reference: { type: string, description: "Idempotency key" }
+                reason: { type: string, description: "Required - never optional" }
+                performedBy: { type: string }
+      responses:
+        "201": { description: Applied }
+        "200": { description: "Duplicate replay (same reference)" }
+        "403": { description: "Disabled - maker-checker required (see src/modules/approval/)" }
+
+x-admin-routes-not-yet-fully-documented:
+  description: |
+    Follow the pattern above for these when full documentation is
+    needed. Grouped by module (route file):
+  routes:
+    - src/modules/admin/admin.routes.js (pool account provisioning, pool status, settlement export)
+    - src/modules/partner/partner.routes.js (partner onboarding, suspend/activate, secret rotation, pool health)
+    - src/modules/account/accountState.routes.js (freeze/unfreeze/dormant/close)
+    - src/modules/kyc/kyc.admin.routes.js (KYC verification)
+    - src/modules/deposit/deposit.routes.js (admin deposit simulation, held-deposit list/resolve)
+    - src/modules/payout/payout.routes.js, src/modules/refund/refund.routes.js (partner-signed, not admin-key)
+    - src/modules/reconciliation/reconciliation.routes.js (exception queue, manual trigger)
+    - src/modules/ledger/ledger.admin.routes.js (per-wallet ledger history)
+    - src/modules/ops/ops.routes.js (customer/transaction search and detail)
+    - src/modules/dispute/dispute.admin.routes.js (dispute list/get/update)
+    - src/modules/adminUser/adminUser.routes.js (admin account bootstrap/login/management)
+    - src/modules/approval/approval.routes.js (maker-checker request/approve/reject)
+    - src/modules/bank/bank.routes.js (bank list, name enquiry)
