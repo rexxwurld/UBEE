@@ -33,10 +33,16 @@ async function teardownTestDatabase() {
     if (replSet) await replSet.stop();
 }
 
-async function clearTestDatabase() {
+    async function clearTestDatabase() {
     const collections = mongoose.connection.collections;
+
     for (const key of Object.keys(collections)) {
         await collections[key].deleteMany({});
+    }
+
+    // Give the replica-set primary a moment to finish catalog/index
+    // operations before the next integration test starts.
+    await new Promise((resolve) => setTimeout(resolve, 100));
     }
 }
 
