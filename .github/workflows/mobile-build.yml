@@ -50,4 +50,4 @@ jobs:
         run: dotnet restore mobile/UBee.App.csproj
 
       - name: Build (iOS)
-        run: dotnet build mobile/UBee.App.csproj -f net10.0-ios -c Release
+        run: dotnet build mobile/UBee.App.csproj -f net10.0-ios -c Release -p:EnableCodeSigning=false
