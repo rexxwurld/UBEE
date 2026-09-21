@@ -44,6 +44,6 @@ async function teardownTestDatabase() {
     // operations before the next integration test starts.
     await new Promise((resolve) => setTimeout(resolve, 100));
     }
-}
+
 
 module.exports = { setupTestDatabase, teardownTestDatabase, clearTestDatabase };
