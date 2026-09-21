@@ -38,11 +38,29 @@ afterEach(async () => {
     await clearTestDatabase();
 });
 
-async function createTestWallet(balance = 0) {
-    return Wallet.create({
+
+
+
+    async function createTestWallet(balance = 0) {
+    const wallet = await Wallet.create({
         accountNumber: `10${Math.floor(1000000 + Math.random() * 8999999)}`,
-        balance
+        balance: 0
     });
+
+    if (balance > 0) {
+        await LedgerEntry.create({
+            entryGroup: `test-initial-${wallet._id}`,
+            wallet: wallet._id,
+            direction: "credit",
+            amount: balance,
+            sourceType: "deposit",
+            sourceRef: `test-initial-${wallet._id}`,
+            description: "Test fixture initial funding"
+        });
+    }
+
+    return wallet;
+    }
 }
 
 describe("adjustment.service - credit", () => {
