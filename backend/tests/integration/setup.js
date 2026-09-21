@@ -20,11 +20,23 @@ const { MongoMemoryReplSet } = require("mongodb-memory-server");
 const mongoose = require("mongoose");
 
 let replSet;
-
 async function setupTestDatabase() {
-    replSet = await MongoMemoryReplSet.create({ replSet: { count: 1, storageEngine: "wiredTiger" } });
+    replSet = await MongoMemoryReplSet.create({
+        replSet: {
+            count: 1,
+            storageEngine: "wiredTiger"
+        }
+    });
+
     const uri = replSet.getUri();
     await mongoose.connect(uri);
+
+    // Ensure all registered Mongoose models and their indexes are
+    // fully initialized before integration tests start transactions.
+    await Promise.all(
+        mongoose.modelNames().map((name) => mongoose.model(name).init())
+    );
+
     return uri;
 }
 
