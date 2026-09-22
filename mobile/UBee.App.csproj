@@ -23,4 +23,7 @@
   <ItemGroup>
     <EmbeddedResource Include="appsettings.json" />
   </ItemGroup>
+<ItemGroup>
+  <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#512BD4" />
+</ItemGroup>
 </Project>
