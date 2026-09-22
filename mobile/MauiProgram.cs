@@ -47,6 +47,22 @@ public static class MauiProgram
         builder.Services.AddTransient<NotificationsPage>();
         builder.Services.AddTransient<SettingsPage>();
         builder.Services.AddTransient<AppShell>();
+
+        
+
+builder.UseMauiApp<App>()
+    .ConfigureFonts(fonts =>
+    {
+        fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+        fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+    });
+
+
+
+
+
+
+        
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
