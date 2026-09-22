@@ -46,7 +46,9 @@ public static class MauiProgram
         builder.Services.AddTransient<BeneficiariesPage>();
         builder.Services.AddTransient<NotificationsPage>();
         builder.Services.AddTransient<SettingsPage>();
-
+#if DEBUG
+        builder.Logging.AddDebug();
+#endif
         return builder.Build();
     }
 }
