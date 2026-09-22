@@ -6,9 +6,16 @@ namespace UBee.App.ViewModels;
 
 public abstract partial class ViewModelBase : ObservableObject
 {
+
     [ObservableProperty] private bool isBusy;
-    [ObservableProperty] private string? errorMessage;
-    [ObservableProperty] private string? successMessage;
+
+[ObservableProperty]
+[NotifyPropertyChangedFor(nameof(HasError))]
+private string? errorMessage;
+
+[ObservableProperty]
+[NotifyPropertyChangedFor(nameof(HasSuccess))]
+private string? successMessage;
     public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
     public bool HasSuccess => !string.IsNullOrWhiteSpace(SuccessMessage);
     protected void ClearMessages() { ErrorMessage = null; SuccessMessage = null; }
