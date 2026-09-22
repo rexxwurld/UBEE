@@ -1,7 +1,7 @@
 using Android.App;
 using Android.Runtime;
 
-namespace mobile
+namespace UBee.App
 {
     [Application]
     public class MainApplication : MauiApplication
