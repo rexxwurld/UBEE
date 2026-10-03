@@ -11,7 +11,6 @@ const User = require("../auth/user.model");
 // transaction.controller.js's getHistory, also fixed this phase).
 exports.getWallet = async (req, res) => {
     try {
-
         const wallet = await walletService.getWallet(req.user.id);
 
         res.json({ status: true, data: wallet });
@@ -46,10 +45,15 @@ exports.lookup = async (req, res) => {
             });
         }
 
-        // Account number = Nigerian phone number without the leading 0.
-        const owner = await User.findOne({
-            phone: `0${accountNumber}`
-        }).select("fullname accountState");
+        const wallet = await Wallet.findOne({
+            accountNumber,
+            status: { $ne: "deactivated" }
+        }).populate({
+            path: "userId",
+            select: "fullname accountState"
+        });
+
+        const owner = wallet?.userId;
 
         if (!owner || owner.accountState !== "active") {
             return res.status(404).json({
