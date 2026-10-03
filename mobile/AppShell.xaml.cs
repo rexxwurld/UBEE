@@ -21,11 +21,15 @@ public partial class AppShell : Shell
         Navigated += OnNavigated;
     }
 
+
     private async void OnNavigated(object? sender, ShellNavigatedEventArgs e)
-    {
-        if (_initialized) return;
-        _initialized = true;
-        var hasSession = await _auth.TryRestoreSessionAsync();
-        await GoToAsync(hasSession ? "//main/dashboard" : "//login");
-    }
+{
+    if (_initialized) return;
+    _initialized = true;
+    var hasSession = false;
+    try { hasSession = await _auth.TryRestoreSessionAsync(); } catch { }
+    try { await GoToAsync(hasSession ? "//main/dashboard" : "//login"); } catch { }
+}
+
+    
 }
