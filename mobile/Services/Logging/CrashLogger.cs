@@ -258,6 +258,7 @@ public static class CrashLogger
           .AppendLine(Thread.CurrentThread.Name is { Length: > 0 } n ? $" ({n})" : "");
         sb.Append("App         : ").AppendLine(_appInfo);
         sb.Append("Device      : ").AppendLine(_deviceInfo);
+        if (_mirror is not null) sb.Append("Public copy : ").AppendLine(LogSanitizer.Clean(_mirror.Location));
         if (!string.IsNullOrWhiteSpace(message)) sb.Append("Message     : ").AppendLine(LogSanitizer.Clean(message));
         if (!string.IsNullOrWhiteSpace(extra)) sb.Append("Detail      : ").AppendLine(LogSanitizer.Clean(extra));
 
