@@ -1,0 +1,59 @@
+# docker-compose.yml
+#
+# LOCAL DEVELOPMENT ONLY. This brings up MongoDB as a single-node
+# replica set (required - see .env.example's comment on MONGO_URI: this
+# codebase uses multi-document transactions everywhere money moves,
+# which standalone MongoDB does not support). No authentication, no
+# TLS, a single node with no real redundancy - none of that is
+# acceptable for production. For production, use a real managed
+# replica set (MongoDB Atlas, or a properly operated self-hosted
+# 3-node+ replica set) with authentication and TLS enabled, and point
+# MONGO_URI at that instead of this compose file.
+
+services:
+  mongo:
+    image: mongo:7
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # One-shot: initiates the replica set on first startup only (rs.initiate()
+  # fails harmlessly if already initiated on subsequent `docker compose up`
+  # runs against the same volume - that's expected and fine).
+  mongo-init:
+    image: mongo:7
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: "no"
+    entrypoint: >
+      mongosh --host mongo:27017 --eval
+      "try { rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'mongo:27017'}]}) } catch (e) { print('replica set likely already initiated: ' + e) }"
+
+  app:
+    build: .
+    depends_on:
+      mongo-init:
+        condition: service_completed_successfully
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      MONGO_URI: mongodb://mongo:27017/ubee?replicaSet=rs0
+      # Everything else (JWT_SECRET, ADMIN_KEY, FIELD_ENCRYPTION_KEY,
+      # etc.) - copy from .env.example into a real .env file and
+      # reference it below instead of hardcoding secrets into this
+      # file, which is meant to be safe to commit.
+    env_file:
+      - .env
+
+volumes:
+  mongo_data:

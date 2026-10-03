@@ -1,0 +1,13 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="UBee.App.Views.VerifyOtpPage" Title="Verify OTP" Shell.NavBarIsVisible="False" BackgroundColor="White">
+<ScrollView><VerticalStackLayout Spacing="0">
+<Border StrokeThickness="0" Padding="24,64,24,48"><Border.StrokeShape><RoundRectangle CornerRadius="0,0,32,32"/></Border.StrokeShape><Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#1A8FE3" Offset="0.0"/><GradientStop Color="#4FB8F5" Offset="1.0"/></LinearGradientBrush></Border.Background><VerticalStackLayout Spacing="4"><Label Text="U-BEE" FontSize="38" FontFamily="OpenSansSemibold" TextColor="White"/><Label Text="Secure banking, built for everyday life." TextColor="#D6EEFF"/></VerticalStackLayout></Border>
+<VerticalStackLayout Padding="24,24,24,30" Spacing="12">
+  <Label Text="Verify OTP" Style="{StaticResource PageTitle}"/>
+  <Label Text="Enter the six-digit code. This screen supports the existing MFA login endpoint." Style="{StaticResource Muted}"/>
+  <Border Style="{StaticResource FieldBorder}"><Entry Text="{Binding Otp}" Placeholder="123456" Keyboard="Numeric" MaxLength="6" FontSize="22"/></Border>
+  <Label Text="{Binding ErrorMessage}" TextColor="{StaticResource Danger}" IsVisible="{Binding HasError}"/>
+  <Label Text="{Binding SuccessMessage}" TextColor="{StaticResource Success}" IsVisible="{Binding HasSuccess}"/>
+  <Button Text="Verify" Style="{StaticResource PrimaryButton}" Command="{Binding VerifyCommand}"/>
+  <Button Text="Resend OTP" Style="{StaticResource GhostButton}" Command="{Binding ResendCommand}"/>
+  <Button Text="Back to login" BackgroundColor="Transparent" TextColor="{StaticResource TextSecondary}" Command="{Binding GoLoginCommand}"/>
+</VerticalStackLayout></VerticalStackLayout></ScrollView></ContentPage>

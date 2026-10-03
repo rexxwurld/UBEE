@@ -1,0 +1,1 @@
+using UBee.App.ViewModels; namespace UBee.App.Views; public partial class BeneficiariesPage:ContentPage{readonly BeneficiariesViewModel vm;public BeneficiariesPage(BeneficiariesViewModel vm){InitializeComponent();this.vm=vm;BindingContext=vm;}protected override async void OnAppearing(){base.OnAppearing();await vm.LoadAsync();}}

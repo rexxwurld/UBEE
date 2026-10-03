@@ -1,0 +1,18 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="UBee.App.Views.RegisterPage" Title="Create account" Shell.NavBarIsVisible="False" BackgroundColor="White">
+<ScrollView><VerticalStackLayout Spacing="0">
+<Border StrokeThickness="0" Padding="24,64,24,48"><Border.StrokeShape><RoundRectangle CornerRadius="0,0,32,32"/></Border.StrokeShape><Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#1A8FE3" Offset="0.0"/><GradientStop Color="#4FB8F5" Offset="1.0"/></LinearGradientBrush></Border.Background><VerticalStackLayout Spacing="4"><Label Text="U-BEE" FontSize="38" FontFamily="OpenSansSemibold" TextColor="White"/><Label Text="Secure banking, built for everyday life." TextColor="#D6EEFF"/></VerticalStackLayout></Border>
+<VerticalStackLayout Padding="24,24,24,30" Spacing="10">
+  <Label Text="Create your account" Style="{StaticResource PageTitle}"/>
+  <Label Text="Your phone number becomes your account number, and you will sign in with it and a 6-digit PIN." Style="{StaticResource Muted}"/>
+  <Label Text="Full name" Style="{StaticResource FieldLabel}" Margin="0,8,0,0"/><Border Style="{StaticResource FieldBorder}"><Entry Text="{Binding Fullname}" Placeholder="John Doe"/></Border>
+  <Label Text="Phone number" Style="{StaticResource FieldLabel}"/><Border Style="{StaticResource FieldBorder}"><Entry Text="{Binding Phone}" Keyboard="Telephone" MaxLength="16" Placeholder="080 1234 5678"/></Border>
+  <Border IsVisible="{Binding HasAccountNumberPreview}" BackgroundColor="{StaticResource SkyLight}" StrokeThickness="0" Padding="14,10"><Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape><Label Text="{Binding AccountNumberPreview}" TextColor="{StaticResource PrimaryDark}" FontSize="13"/></Border>
+  <Label Text="Email" Style="{StaticResource FieldLabel}"/><Border Style="{StaticResource FieldBorder}"><Entry Text="{Binding Email}" Keyboard="Email" Placeholder="you@example.com"/></Border>
+  <Label Text="Create PIN" Style="{StaticResource FieldLabel}"/><Border Style="{StaticResource FieldBorder}"><Entry Text="{Binding Pin}" IsPassword="True" Keyboard="Numeric" MaxLength="6" Placeholder="6 digits"/></Border>
+  <Label Text="Confirm PIN" Style="{StaticResource FieldLabel}"/><Border Style="{StaticResource FieldBorder}"><Entry Text="{Binding ConfirmPin}" IsPassword="True" Keyboard="Numeric" MaxLength="6" Placeholder="Re-enter PIN"/></Border>
+  <Label Text="{Binding ErrorMessage}" TextColor="{StaticResource Danger}" IsVisible="{Binding HasError}"/>
+  <Label Text="{Binding SuccessMessage}" TextColor="{StaticResource Success}" IsVisible="{Binding HasSuccess}"/>
+  <Button Text="Create account" Style="{StaticResource PrimaryButton}" Command="{Binding RegisterCommand}"/>
+  <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+  <Button Text="Already have an account? Sign in" Style="{StaticResource GhostButton}" Command="{Binding GoLoginCommand}"/>
+</VerticalStackLayout></VerticalStackLayout></ScrollView></ContentPage>

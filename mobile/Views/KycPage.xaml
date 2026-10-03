@@ -1,0 +1,62 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="UBee.App.Views.KycPage" Title="Account Limits">
+<ScrollView><VerticalStackLayout Padding="18,16,18,24" Spacing="14">
+
+  <Border StrokeThickness="0" Padding="22"><Border.StrokeShape><RoundRectangle CornerRadius="24"/></Border.StrokeShape><Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#1A8FE3" Offset="0.0"/><GradientStop Color="#4FB8F5" Offset="1.0"/></LinearGradientBrush></Border.Background>
+    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+      <VerticalStackLayout Spacing="6">
+        <Label Text="Account Info" TextColor="{StaticResource OnPrimaryMuted}" FontSize="13"/>
+        <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="10"><Label Text="{Binding AccountNumber}" TextColor="White" FontSize="24" FontFamily="OpenSansSemibold" VerticalOptions="Center"/><Image Grid.Column="1" Source="ic_copy_w.svg" WidthRequest="20" HeightRequest="20" VerticalOptions="Center"><Image.GestureRecognizers><TapGestureRecognizer Command="{Binding CopyAccountCommand}"/></Image.GestureRecognizers></Image></Grid>
+        <Border BackgroundColor="#33FFFFFF" StrokeThickness="0" Padding="12,6" HorizontalOptions="Start"><Border.StrokeShape><RoundRectangle CornerRadius="14"/></Border.StrokeShape><Label Text="{Binding Fullname}" TextColor="White" FontSize="12" CharacterSpacing="0.3"/></Border>
+      </VerticalStackLayout>
+      <Border Grid.Column="1" BackgroundColor="White" StrokeThickness="0" WidthRequest="78" HeightRequest="78" VerticalOptions="Center"><Border.StrokeShape><RoundRectangle CornerRadius="39"/></Border.StrokeShape>
+        <VerticalStackLayout VerticalOptions="Center" Spacing="-2"><Label Text="{Binding TierNumber}" FontSize="30" FontFamily="OpenSansSemibold" TextColor="{StaticResource Primary}" HorizontalOptions="Center"/><Label Text="Tier" FontSize="11" TextColor="{StaticResource TextSecondary}" HorizontalOptions="Center"/></VerticalStackLayout></Border>
+    </Grid>
+  </Border>
+  <Label Text="{Binding SuccessMessage}" TextColor="{StaticResource Success}" IsVisible="{Binding HasSuccess}"/>
+
+  <Border Style="{StaticResource CardBorder}" Padding="18,14">
+    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8"><Label Text="Linked ID" FontFamily="OpenSansSemibold" VerticalOptions="Center"/><Label Grid.Column="1" Text="{Binding LinkedId}" TextColor="{StaticResource TextSecondary}" VerticalOptions="Center"/></Grid>
+  </Border>
+
+  <Border Style="{StaticResource CardBorder}">
+    <VerticalStackLayout Spacing="10">
+      <Label Text="Daily Transaction Limit" FontFamily="OpenSansSemibold"/>
+      <ProgressBar Progress="{Binding DailyProgress}" ProgressColor="{StaticResource Primary}" HeightRequest="8"/>
+      <Label Text="{Binding DailyText}" Style="{StaticResource Muted}"/>
+    </VerticalStackLayout>
+  </Border>
+
+  <Border Style="{StaticResource CardBorder}" Padding="0">
+    <VerticalStackLayout>
+      <Label Text="Level Benefit" FontFamily="OpenSansSemibold" Padding="18,16,18,10"/>
+      <Grid ColumnDefinitions="1.1*,*,*" Padding="18,10" BackgroundColor="{StaticResource SkyMist}"><Label Text="Tier" FontFamily="OpenSansSemibold" FontSize="13"/><Label Grid.Column="1" Text="Max daily transfers" FontSize="12" HorizontalTextAlignment="End" TextColor="{StaticResource TextSecondary}"/><Label Grid.Column="2" Text="Max balance" FontSize="12" HorizontalTextAlignment="End" TextColor="{StaticResource TextSecondary}"/></Grid>
+      <VerticalStackLayout BindableLayout.ItemsSource="{Binding Tiers}"><BindableLayout.ItemTemplate><DataTemplate>
+        <Grid ColumnDefinitions="1.1*,*,*" Padding="18,14">
+          <HorizontalStackLayout Spacing="6"><Label Text="{Binding Label}" FontFamily="OpenSansSemibold" VerticalOptions="Center"/><Border IsVisible="{Binding IsCurrent}" BackgroundColor="{StaticResource SkyLight}" StrokeThickness="0" Padding="8,2" VerticalOptions="Center"><Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape><Label Text="Current" FontSize="11" TextColor="{StaticResource PrimaryDark}"/></Border></HorizontalStackLayout>
+          <Label Grid.Column="1" Text="{Binding Daily}" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+          <Label Grid.Column="2" Text="{Binding Balance}" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+        </Grid></DataTemplate></BindableLayout.ItemTemplate></VerticalStackLayout>
+    </VerticalStackLayout>
+  </Border>
+
+  <!-- Upgrade -->
+  <Border Style="{StaticResource CardBorder}" IsVisible="{Binding ShowForm}">
+    <VerticalStackLayout Spacing="8">
+      <Label Text="Upgrade your account" Style="{StaticResource SectionTitle}"/>
+      <Label Text="Link your BVN and NIN to move up a tier. They are sent only over the secure API and stored encrypted/hashed." Style="{StaticResource Muted}"/>
+      <Label Text="BVN" Style="{StaticResource FieldLabel}"/>
+      <Border Style="{StaticResource FieldBorder}"><Entry Text="{Binding Bvn}" Keyboard="Numeric" MaxLength="11" Placeholder="11 digits"/></Border>
+      <Label Text="NIN" Style="{StaticResource FieldLabel}"/>
+      <Border Style="{StaticResource FieldBorder}"><Entry Text="{Binding Nin}" Keyboard="Numeric" MaxLength="11" Placeholder="11 digits"/></Border>
+      <Label Text="Date of birth" Style="{StaticResource FieldLabel}"/>
+      <Border Style="{StaticResource FieldBorder}"><DatePicker Date="{Binding DateOfBirth}"/></Border>
+      <Label Text="{Binding ErrorMessage}" TextColor="{StaticResource Danger}" IsVisible="{Binding HasError}"/>
+      <Button Text="Submit for verification" Style="{StaticResource PrimaryButton}" Command="{Binding SubmitCommand}"/>
+      <Label Text="This is a submission, not an automatic check. Approval is done by our team." Style="{StaticResource Muted}" FontSize="12"/>
+    </VerticalStackLayout>
+  </Border>
+  <Border Style="{StaticResource CardBorder}" BackgroundColor="{StaticResource SkyMist}" IsVisible="{Binding ShowForm, Converter={StaticResource InverseBoolConverter}}">
+    <Label Text="{Binding StatusText, StringFormat='Verification status: {0}'}" TextColor="{StaticResource PrimaryDark}"/>
+  </Border>
+  <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+</VerticalStackLayout></ScrollView></ContentPage>

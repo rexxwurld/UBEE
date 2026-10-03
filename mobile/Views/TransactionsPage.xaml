@@ -1,0 +1,18 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:UBee.App.Views" x:Class="UBee.App.Views.TransactionsPage" Title="Transactions">
+<Grid RowDefinitions="Auto,Auto,*">
+  <VerticalStackLayout Padding="18,16,18,4"><Label Text="Transactions" Style="{StaticResource PageTitle}"/></VerticalStackLayout>
+  <Grid Grid.Row="1" Padding="18,8" ColumnDefinitions="*,*" ColumnSpacing="10">
+    <Border Style="{StaticResource FieldBorder}"><Picker Title="Type" ItemsSource="{Binding Source={x:Static local:TransactionFilters.Types}}" SelectedItem="{Binding TypeFilter}"/></Border>
+    <Border Grid.Column="1" Style="{StaticResource FieldBorder}"><Picker Title="Status" ItemsSource="{Binding Source={x:Static local:TransactionFilters.Statuses}}" SelectedItem="{Binding StatusFilter}"/></Border>
+  </Grid>
+  <CollectionView Grid.Row="2" ItemsSource="{Binding FilteredTransactions}" SelectionMode="None" RemainingItemsThreshold="3" RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
+    <CollectionView.EmptyView><Label Text="No transactions yet." Style="{StaticResource Muted}" HorizontalOptions="Center" Margin="0,40"/></CollectionView.EmptyView>
+    <CollectionView.ItemTemplate><DataTemplate>
+      <Border Style="{StaticResource CardBorder}" Padding="14,2" Margin="18,5"><Grid Padding="0,12" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+          <Border Style="{StaticResource IconTile}" WidthRequest="42" HeightRequest="42"><Border.StrokeShape><RoundRectangle CornerRadius="21"/></Border.StrokeShape><Image Source="{Binding Icon}" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"/></Border>
+          <VerticalStackLayout Grid.Column="1" VerticalOptions="Center"><Label Text="{Binding Title}" LineBreakMode="TailTruncation"/><Label Text="{Binding Subtitle}" Style="{StaticResource Muted}" FontSize="12" LineBreakMode="TailTruncation"/></VerticalStackLayout>
+          <Label Grid.Column="2" Text="{Binding AmountDisplay}" FontFamily="OpenSansSemibold" VerticalOptions="Center"><Label.Triggers><DataTrigger TargetType="Label" Binding="{Binding IsCredit}" Value="True"><Setter Property="TextColor" Value="{StaticResource Success}"/></DataTrigger></Label.Triggers></Label>
+        </Grid></Border>
+    </DataTemplate></CollectionView.ItemTemplate>
+  </CollectionView>
+</Grid></ContentPage>

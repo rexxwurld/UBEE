@@ -1,0 +1,99 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="UBee.App.Views.TransferPage" Title="Transfer to U-BEE Account">
+<ScrollView><VerticalStackLayout Padding="18,16,18,24" Spacing="14">
+
+  <Border BackgroundColor="{StaticResource SkyLight}" StrokeThickness="0" Padding="14,10"><Border.StrokeShape><RoundRectangle CornerRadius="14"/></Border.StrokeShape>
+    <Label Text="Instant, secure, U-BEE to U-BEE" TextColor="{StaticResource PrimaryDark}" FontFamily="OpenSansSemibold" FontSize="14"/></Border>
+
+  <Border Style="{StaticResource CardBorder}" Padding="16,12">
+    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+      <Border Style="{StaticResource IconTile}" WidthRequest="40" HeightRequest="40"><Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape><Image Source="ic_bank.svg" WidthRequest="20" HeightRequest="20"/></Border>
+      <VerticalStackLayout Grid.Column="1" VerticalOptions="Center"><Label Text="Send to another bank" FontFamily="OpenSansSemibold"/><Label Text="GTBank, Access, Zenith and more" Style="{StaticResource Muted}" FontSize="12"/></VerticalStackLayout>
+      <Image Grid.Column="2" Source="ic_chevron.svg" WidthRequest="16" HeightRequest="16"/>
+      <Grid.GestureRecognizers><TapGestureRecognizer Command="{Binding GoBankCommand}"/></Grid.GestureRecognizers>
+    </Grid>
+  </Border>
+
+  <Label Text="{Binding SuccessMessage}" TextColor="{StaticResource Success}" IsVisible="{Binding HasSuccess}" FontFamily="OpenSansSemibold"/>
+
+  <!-- STEP 1: recipient -->
+  <VerticalStackLayout IsVisible="{Binding IsStep1}" Spacing="14">
+    <Border Style="{StaticResource CardBorder}">
+      <VerticalStackLayout Spacing="12">
+        <Label Text="Recipient Account" Style="{StaticResource SectionTitle}"/>
+        <Border Style="{StaticResource FieldBorder}"><Entry Text="{Binding AccountNumber}" Keyboard="Numeric" MaxLength="14" Placeholder="Enter 10 digits account number"/></Border>
+        <ActivityIndicator IsRunning="{Binding LookingUp}" IsVisible="{Binding LookingUp}" HeightRequest="24"/>
+        <Border IsVisible="{Binding RecipientVerified}" BackgroundColor="#E5F6EE" StrokeThickness="0" Padding="12,10"><Border.StrokeShape><RoundRectangle CornerRadius="14"/></Border.StrokeShape>
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10"><Image Source="ic_check.svg" WidthRequest="22" HeightRequest="22"/><Label Grid.Column="1" Text="{Binding RecipientName}" TextColor="{StaticResource Success}" FontFamily="OpenSansSemibold" VerticalOptions="Center"/></Grid></Border>
+        <Label Text="{Binding LookupError}" IsVisible="{Binding HasLookupError}" TextColor="{StaticResource Danger}" FontSize="13"/>
+        <Button Text="Next" Style="{StaticResource PrimaryButton}" Command="{Binding NextCommand}" IsEnabled="{Binding CanContinue}"/>
+      </VerticalStackLayout>
+    </Border>
+
+    <Border Style="{StaticResource CardBorder}" Padding="18,12,18,8">
+      <VerticalStackLayout Spacing="4">
+        <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="26" Padding="0,0,0,6">
+          <VerticalStackLayout Spacing="4">
+            <Label Text="Recents" FontFamily="OpenSansSemibold" FontSize="16" TextColor="{StaticResource Primary}"><Label.Triggers><DataTrigger TargetType="Label" Binding="{Binding ShowRecents}" Value="False"><Setter Property="TextColor" Value="{StaticResource TextSecondary}"/></DataTrigger></Label.Triggers></Label>
+            <BoxView HeightRequest="3" WidthRequest="26" Color="{StaticResource Primary}" HorizontalOptions="Start" CornerRadius="2" IsVisible="{Binding ShowRecents}"/>
+            <VerticalStackLayout.GestureRecognizers><TapGestureRecognizer Command="{Binding ShowRecentsTabCommand}"/></VerticalStackLayout.GestureRecognizers>
+          </VerticalStackLayout>
+          <VerticalStackLayout Grid.Column="1" Spacing="4">
+            <Label Text="Favourites" FontFamily="OpenSansSemibold" FontSize="16" TextColor="{StaticResource TextSecondary}"><Label.Triggers><DataTrigger TargetType="Label" Binding="{Binding ShowFavourites}" Value="True"><Setter Property="TextColor" Value="{StaticResource Primary}"/></DataTrigger></Label.Triggers></Label>
+            <BoxView HeightRequest="3" WidthRequest="26" Color="{StaticResource Primary}" HorizontalOptions="Start" CornerRadius="2" IsVisible="{Binding ShowFavourites}"/>
+            <VerticalStackLayout.GestureRecognizers><TapGestureRecognizer Command="{Binding ShowFavouritesTabCommand}"/></VerticalStackLayout.GestureRecognizers>
+          </VerticalStackLayout>
+        </Grid>
+        <BoxView HeightRequest="1" Color="{StaticResource Border}"/>
+
+        <VerticalStackLayout IsVisible="{Binding ShowRecents}">
+          <VerticalStackLayout BindableLayout.ItemsSource="{Binding Recents}"><BindableLayout.ItemTemplate><DataTemplate><Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="0,10"><Border Style="{StaticResource IconTile}" WidthRequest="42" HeightRequest="42"><Border.StrokeShape><RoundRectangle CornerRadius="21"/></Border.StrokeShape><Label Text="{Binding Initial}" TextColor="{StaticResource Primary}" FontFamily="OpenSansSemibold" HorizontalOptions="Center" VerticalOptions="Center"/></Border><VerticalStackLayout Grid.Column="1" VerticalOptions="Center"><Label Text="{Binding Name}" FontFamily="OpenSansSemibold" LineBreakMode="TailTruncation"/><Label Text="{Binding AccountNumber}" Style="{StaticResource Muted}"/></VerticalStackLayout><Image Grid.Column="2" Source="ic_chevron.svg" WidthRequest="16" HeightRequest="16"/><Grid.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectRecipientCommand}" CommandParameter="{Binding .}"/></Grid.GestureRecognizers></Grid></DataTemplate></BindableLayout.ItemTemplate></VerticalStackLayout>
+          <Label Text="No recent recipients yet. People you send money to will show up here." Style="{StaticResource Muted}" Padding="0,14"><Label.Triggers><DataTrigger TargetType="Label" Binding="{Binding HasRecents}" Value="True"><Setter Property="IsVisible" Value="False"/></DataTrigger></Label.Triggers></Label>
+        </VerticalStackLayout>
+        <VerticalStackLayout IsVisible="{Binding ShowFavourites}">
+          <VerticalStackLayout BindableLayout.ItemsSource="{Binding Favourites}"><BindableLayout.ItemTemplate><DataTemplate><Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="0,10"><Border Style="{StaticResource IconTile}" WidthRequest="42" HeightRequest="42"><Border.StrokeShape><RoundRectangle CornerRadius="21"/></Border.StrokeShape><Label Text="{Binding Initial}" TextColor="{StaticResource Primary}" FontFamily="OpenSansSemibold" HorizontalOptions="Center" VerticalOptions="Center"/></Border><VerticalStackLayout Grid.Column="1" VerticalOptions="Center"><Label Text="{Binding Name}" FontFamily="OpenSansSemibold" LineBreakMode="TailTruncation"/><Label Text="{Binding AccountNumber}" Style="{StaticResource Muted}"/></VerticalStackLayout><Image Grid.Column="2" Source="ic_chevron.svg" WidthRequest="16" HeightRequest="16"/><Grid.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectRecipientCommand}" CommandParameter="{Binding .}"/></Grid.GestureRecognizers></Grid></DataTemplate></BindableLayout.ItemTemplate></VerticalStackLayout>
+          <Label Text="No favourites yet. Tick 'Save to favourites' when you send, or add one from Favourites." Style="{StaticResource Muted}" Padding="0,14"><Label.Triggers><DataTrigger TargetType="Label" Binding="{Binding HasFavourites}" Value="True"><Setter Property="IsVisible" Value="False"/></DataTrigger></Label.Triggers></Label>
+        </VerticalStackLayout>
+      </VerticalStackLayout>
+    </Border>
+  </VerticalStackLayout>
+
+  <!-- STEP 2: amount -->
+  <VerticalStackLayout IsVisible="{Binding IsStep2}" Spacing="14">
+    <Border Style="{StaticResource CardBorder}">
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+        <Border Style="{StaticResource IconTile}" WidthRequest="44" HeightRequest="44"><Border.StrokeShape><RoundRectangle CornerRadius="22"/></Border.StrokeShape><Image Source="ic_user.svg" WidthRequest="22" HeightRequest="22"/></Border>
+        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center"><Label Text="{Binding RecipientName}" FontFamily="OpenSansSemibold"/><Label Text="{Binding AccountNumber}" Style="{StaticResource Muted}"/></VerticalStackLayout>
+        <Label Grid.Column="2" Text="Change" TextColor="{StaticResource Primary}" VerticalOptions="Center"><Label.GestureRecognizers><TapGestureRecognizer Command="{Binding BackCommand}"/></Label.GestureRecognizers></Label>
+      </Grid>
+    </Border>
+    <Border Style="{StaticResource CardBorder}">
+      <VerticalStackLayout Spacing="10">
+        <Grid ColumnDefinitions="*,Auto"><Label Text="Amount" Style="{StaticResource SectionTitle}"/><Label Grid.Column="1" Text="{Binding DisplayBalance, StringFormat='Balance {0}'}" Style="{StaticResource Muted}" VerticalOptions="Center"/></Grid>
+        <Border Style="{StaticResource FieldBorder}"><Grid ColumnDefinitions="Auto,*"><Label Text="₦" FontSize="22" FontFamily="OpenSansSemibold" VerticalOptions="Center" TextColor="{StaticResource Primary}"/><Entry Grid.Column="1" Text="{Binding Amount}" Keyboard="Numeric" Placeholder="0.00" FontSize="22"/></Grid></Border>
+        <Border Style="{StaticResource FieldBorder}"><Entry Text="{Binding Description}" Placeholder="Add a note (optional)"/></Border>
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10"><CheckBox IsChecked="{Binding SaveAsFavourite}" Color="{StaticResource Primary}"/><Label Grid.Column="1" Text="Save to favourites" VerticalOptions="Center"/></Grid>
+      </VerticalStackLayout>
+    </Border>
+    <Label Text="{Binding ErrorMessage}" TextColor="{StaticResource Danger}" IsVisible="{Binding HasError}"/>
+    <Button Text="Review transfer" Style="{StaticResource PrimaryButton}" Command="{Binding ReviewCommand}"/>
+
+    <Border IsVisible="{Binding ShowConfirmation}" Style="{StaticResource CardBorder}" Stroke="{StaticResource Sky}" StrokeThickness="1.5">
+      <VerticalStackLayout Spacing="10">
+        <Label Text="Confirm transfer" Style="{StaticResource SectionTitle}"/>
+        <Label Text="{Binding ConfirmAmount}" FontSize="30" FontFamily="OpenSansSemibold" TextColor="{StaticResource Primary}"/>
+        <BoxView HeightRequest="1" Color="{StaticResource Border}"/>
+        <Grid ColumnDefinitions="*,Auto"><Label Text="To" Style="{StaticResource Muted}"/><Label Grid.Column="1" Text="{Binding RecipientName}" FontFamily="OpenSansSemibold"/></Grid>
+        <Grid ColumnDefinitions="*,Auto"><Label Text="Account" Style="{StaticResource Muted}"/><Label Grid.Column="1" Text="{Binding AccountNumber}"/></Grid>
+        <Label Text="{Binding Description}" Style="{StaticResource Muted}"/>
+        <Label Text="Enter your PIN to confirm" FontFamily="OpenSansSemibold" Margin="0,6,0,0"/>
+        <Border Style="{StaticResource FieldBorder}"><Entry Text="{Binding Pin}" IsPassword="True" Keyboard="Numeric" MaxLength="6" Placeholder="6-digit PIN" HorizontalTextAlignment="Center" FontSize="20"/></Border>
+        <Label Text="{Binding ErrorMessage}" TextColor="{StaticResource Danger}" IsVisible="{Binding HasError}" FontSize="13"/>
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+          <Button Text="Cancel" Style="{StaticResource SecondaryButton}" Command="{Binding CancelReviewCommand}"/>
+          <Button Grid.Column="1" Text="Confirm &amp; Send" Style="{StaticResource PrimaryButton}" Command="{Binding SubmitCommand}" IsEnabled="{Binding CanConfirm}"/>
+        </Grid>
+        <ActivityIndicator IsRunning="{Binding Submitting}" IsVisible="{Binding Submitting}"/>
+      </VerticalStackLayout>
+    </Border>
+  </VerticalStackLayout>
+</VerticalStackLayout></ScrollView></ContentPage>

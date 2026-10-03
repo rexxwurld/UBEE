@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:UBee.App"
+             x:Class="UBee.App.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <local:InverseBoolConverter x:Key="InverseBoolConverter"/>
+
+            <!-- Sky blue + white palette -->
+            <Color x:Key="Primary">#1A8FE3</Color>
+            <Color x:Key="PrimaryDark">#0B6FBF</Color>
+            <Color x:Key="Sky">#4FB8F5</Color>
+            <Color x:Key="SkyLight">#E6F4FE</Color>
+            <Color x:Key="SkyMist">#F3F9FF</Color>
+            <Color x:Key="Background">#F5F9FD</Color>
+            <Color x:Key="Card">#FFFFFF</Color>
+            <Color x:Key="TextPrimary">#13293D</Color>
+            <Color x:Key="TextSecondary">#6B7F92</Color>
+            <Color x:Key="Success">#16855B</Color>
+            <Color x:Key="Danger">#D64545</Color>
+            <Color x:Key="Border">#E3EDF6</Color>
+            <Color x:Key="OnPrimaryMuted">#D6EEFF</Color>
+
+            <Style TargetType="ContentPage" ApplyToDerivedTypes="True">
+                <Setter Property="BackgroundColor" Value="{StaticResource Background}" />
+                <Setter Property="Shell.BackgroundColor" Value="White" />
+                <Setter Property="Shell.TitleColor" Value="{StaticResource TextPrimary}" />
+                <Setter Property="Shell.ForegroundColor" Value="{StaticResource Primary}" />
+            </Style>
+            <Style TargetType="Label">
+                <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
+                <Setter Property="FontFamily" Value="OpenSansRegular" />
+            </Style>
+            <Style x:Key="PageTitle" TargetType="Label">
+                <Setter Property="FontFamily" Value="OpenSansSemibold" />
+                <Setter Property="FontSize" Value="26" />
+            </Style>
+            <Style x:Key="SectionTitle" TargetType="Label">
+                <Setter Property="FontFamily" Value="OpenSansSemibold" />
+                <Setter Property="FontSize" Value="17" />
+            </Style>
+            <Style x:Key="Muted" TargetType="Label">
+                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                <Setter Property="FontSize" Value="13" />
+            </Style>
+            <Style x:Key="FieldLabel" TargetType="Label">
+                <Setter Property="FontFamily" Value="OpenSansSemibold" />
+                <Setter Property="FontSize" Value="14" />
+            </Style>
+
+            <Style TargetType="Button">
+                <Setter Property="CornerRadius" Value="26" />
+                <Setter Property="Padding" Value="16,14" />
+                <Setter Property="FontFamily" Value="OpenSansSemibold" />
+            </Style>
+            <Style x:Key="PrimaryButton" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                <Setter Property="TextColor" Value="White" />
+                <Setter Property="HeightRequest" Value="52" />
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal" />
+                            <VisualState x:Name="Disabled">
+                                <VisualState.Setters><Setter Property="BackgroundColor" Value="#B3DDF8" /></VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+            <Style x:Key="SecondaryButton" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="{StaticResource SkyLight}" />
+                <Setter Property="TextColor" Value="{StaticResource PrimaryDark}" />
+                <Setter Property="HeightRequest" Value="52" />
+            </Style>
+            <Style x:Key="GhostButton" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="Transparent" />
+                <Setter Property="TextColor" Value="{StaticResource Primary}" />
+            </Style>
+
+            <!-- White rounded card -->
+            <Style x:Key="CardBorder" TargetType="Border">
+                <Setter Property="BackgroundColor" Value="White" />
+                <Setter Property="Stroke" Value="{StaticResource Border}" />
+                <Setter Property="StrokeThickness" Value="1" />
+                <Setter Property="Padding" Value="18" />
+                <Setter Property="StrokeShape"><Setter.Value><RoundRectangle CornerRadius="20"/></Setter.Value></Setter>
+            </Style>
+            <!-- Soft input container -->
+            <Style x:Key="FieldBorder" TargetType="Border">
+                <Setter Property="BackgroundColor" Value="{StaticResource SkyMist}" />
+                <Setter Property="Stroke" Value="{StaticResource Border}" />
+                <Setter Property="StrokeThickness" Value="1" />
+                <Setter Property="Padding" Value="14,0" />
+                <Setter Property="StrokeShape"><Setter.Value><RoundRectangle CornerRadius="14"/></Setter.Value></Setter>
+            </Style>
+            <!-- Round tinted icon tile (quick actions) -->
+            <Style x:Key="IconTile" TargetType="Border">
+                <Setter Property="BackgroundColor" Value="{StaticResource SkyLight}" />
+                <Setter Property="StrokeThickness" Value="0" />
+                <Setter Property="WidthRequest" Value="52" />
+                <Setter Property="HeightRequest" Value="52" />
+                <Setter Property="HorizontalOptions" Value="Center" />
+                <Setter Property="StrokeShape"><Setter.Value><RoundRectangle CornerRadius="26"/></Setter.Value></Setter>
+            </Style>
+
+            <Style TargetType="Entry">
+                <Setter Property="BackgroundColor" Value="Transparent" />
+                <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
+                <Setter Property="PlaceholderColor" Value="#9FB1C2" />
+                <Setter Property="HeightRequest" Value="52" />
+                <Setter Property="FontFamily" Value="OpenSansRegular" />
+            </Style>
+            <Style TargetType="Picker">
+                <Setter Property="BackgroundColor" Value="Transparent" />
+                <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
+                <Setter Property="TitleColor" Value="{StaticResource TextSecondary}" />
+                <Setter Property="HeightRequest" Value="52" />
+            </Style>
+            <Style TargetType="DatePicker">
+                <Setter Property="BackgroundColor" Value="Transparent" />
+                <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
+            </Style>
+            <Style TargetType="ActivityIndicator">
+                <Setter Property="Color" Value="{StaticResource Primary}" />
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

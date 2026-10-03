@@ -1,0 +1,66 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="UBee.App.Views.DashboardPage" Title="U-BEE" Shell.NavBarIsVisible="False">
+<ScrollView><VerticalStackLayout Padding="18,16,18,24" Spacing="16">
+
+  <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+    <Grid WidthRequest="50" HeightRequest="50">
+      <Border BackgroundColor="{StaticResource Primary}" StrokeThickness="0" WidthRequest="46" HeightRequest="46" HorizontalOptions="Start" VerticalOptions="Start"><Border.StrokeShape><RoundRectangle CornerRadius="23"/></Border.StrokeShape><Label Text="{Binding Initial}" TextColor="White" FontFamily="OpenSansSemibold" FontSize="19" HorizontalOptions="Center" VerticalOptions="Center"/></Border>
+      <Border BackgroundColor="White" Stroke="{StaticResource Primary}" StrokeThickness="1.5" WidthRequest="20" HeightRequest="20" HorizontalOptions="End" VerticalOptions="End"><Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape><Label Text="{Binding TierNumber}" FontSize="10" FontFamily="OpenSansSemibold" TextColor="{StaticResource PrimaryDark}" HorizontalOptions="Center" VerticalOptions="Center"/></Border>
+      <Grid.GestureRecognizers><TapGestureRecognizer Command="{Binding GoProfileCommand}"/></Grid.GestureRecognizers>
+    </Grid>
+    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center"><Label Text="{Binding FirstName, StringFormat='Hi, {0}'}" FontFamily="OpenSansSemibold" FontSize="19"/></VerticalStackLayout>
+    <Border Grid.Column="2" Style="{StaticResource IconTile}" WidthRequest="44" HeightRequest="44" BackgroundColor="White" Stroke="{StaticResource Border}" StrokeThickness="1"><Border.StrokeShape><RoundRectangle CornerRadius="22"/></Border.StrokeShape><Image Source="ic_bell.svg" WidthRequest="22" HeightRequest="22" HorizontalOptions="Center" VerticalOptions="Center"/><Border.GestureRecognizers><TapGestureRecognizer Command="{Binding GoNotificationsCommand}"/></Border.GestureRecognizers></Border>
+  </Grid>
+
+  <Border StrokeThickness="0" Padding="22">
+    <Border.StrokeShape><RoundRectangle CornerRadius="24"/></Border.StrokeShape>
+    <Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#1A8FE3" Offset="0.0"/><GradientStop Color="#4FB8F5" Offset="1.0"/></LinearGradientBrush></Border.Background>
+    <VerticalStackLayout Spacing="6">
+      <Grid ColumnDefinitions="*,Auto">
+        <Label Text="Available balance" TextColor="{StaticResource OnPrimaryMuted}" VerticalOptions="Center"/>
+        <Image Grid.Column="1" Source="{Binding EyeIcon}" WidthRequest="22" HeightRequest="22"><Image.GestureRecognizers><TapGestureRecognizer Command="{Binding ToggleBalanceCommand}"/></Image.GestureRecognizers></Image>
+      </Grid>
+      <Label Text="{Binding DisplayBalance}" FontSize="34" FontFamily="OpenSansSemibold" TextColor="White"/>
+      <BoxView HeightRequest="1" Color="#55FFFFFF" Margin="0,8"/>
+      <Grid ColumnDefinitions="*,Auto">
+        <VerticalStackLayout><Label Text="Account number" TextColor="{StaticResource OnPrimaryMuted}" FontSize="12"/><Label Text="{Binding AccountNumber}" TextColor="White" FontSize="16" FontFamily="OpenSansSemibold"/></VerticalStackLayout>
+        <Border Grid.Column="1" BackgroundColor="#33FFFFFF" StrokeThickness="0" Padding="12,6" VerticalOptions="Center"><Border.StrokeShape><RoundRectangle CornerRadius="14"/></Border.StrokeShape><Label Text="{Binding KycStatus}" TextColor="White" FontSize="12"/></Border>
+      </Grid>
+    </VerticalStackLayout>
+  </Border>
+
+  <Border Style="{StaticResource CardBorder}" Padding="10,18">
+    <Grid ColumnDefinitions="*,*,*,*">
+      <VerticalStackLayout Spacing="6"><Border Style="{StaticResource IconTile}"><Image Source="ic_send.svg" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center"/></Border><Label Text="To U-BEE" FontSize="12" HorizontalOptions="Center"/><VerticalStackLayout.GestureRecognizers><TapGestureRecognizer Command="{Binding GoTransferCommand}"/></VerticalStackLayout.GestureRecognizers></VerticalStackLayout>
+      <VerticalStackLayout Grid.Column="1" Spacing="6"><Border Style="{StaticResource IconTile}"><Image Source="ic_bank.svg" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center"/></Border><Label Text="To Bank" FontSize="12" HorizontalOptions="Center"/><VerticalStackLayout.GestureRecognizers><TapGestureRecognizer Command="{Binding GoBankCommand}"/></VerticalStackLayout.GestureRecognizers></VerticalStackLayout>
+      <VerticalStackLayout Grid.Column="2" Spacing="6"><Border Style="{StaticResource IconTile}"><Image Source="ic_history.svg" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center"/></Border><Label Text="History" FontSize="12" HorizontalOptions="Center"/><VerticalStackLayout.GestureRecognizers><TapGestureRecognizer Command="{Binding GoTransactionsCommand}"/></VerticalStackLayout.GestureRecognizers></VerticalStackLayout>
+      <VerticalStackLayout Grid.Column="3" Spacing="6"><Border Style="{StaticResource IconTile}"><Image Source="ic_users.svg" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center"/></Border><Label Text="Favourites" FontSize="12" HorizontalOptions="Center"/><VerticalStackLayout.GestureRecognizers><TapGestureRecognizer Command="{Binding GoBeneficiariesCommand}"/></VerticalStackLayout.GestureRecognizers></VerticalStackLayout>
+    </Grid>
+  </Border>
+
+  <Border Style="{StaticResource CardBorder}" Padding="10,18">
+    <Grid ColumnDefinitions="*,*,*,*">
+      <VerticalStackLayout Spacing="6"><Border Style="{StaticResource IconTile}"><Image Source="ic_gauge.svg" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center"/></Border><Label Text="Limits" FontSize="12" HorizontalOptions="Center"/><VerticalStackLayout.GestureRecognizers><TapGestureRecognizer Command="{Binding GoKycCommand}"/></VerticalStackLayout.GestureRecognizers></VerticalStackLayout>
+      <VerticalStackLayout Grid.Column="1" Spacing="6"><Border Style="{StaticResource IconTile}"><Image Source="ic_user.svg" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center"/></Border><Label Text="Profile" FontSize="12" HorizontalOptions="Center"/><VerticalStackLayout.GestureRecognizers><TapGestureRecognizer Command="{Binding GoProfileCommand}"/></VerticalStackLayout.GestureRecognizers></VerticalStackLayout>
+      <VerticalStackLayout Grid.Column="2" Spacing="6"><Border Style="{StaticResource IconTile}"><Image Source="ic_wallet.svg" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center"/></Border><Label Text="Wallet" FontSize="12" HorizontalOptions="Center"/><VerticalStackLayout.GestureRecognizers><TapGestureRecognizer Command="{Binding GoWalletCommand}"/></VerticalStackLayout.GestureRecognizers></VerticalStackLayout>
+      <VerticalStackLayout Grid.Column="3" Spacing="6"><Border Style="{StaticResource IconTile}"><Image Source="ic_bell.svg" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center"/></Border><Label Text="Alerts" FontSize="12" HorizontalOptions="Center"/><VerticalStackLayout.GestureRecognizers><TapGestureRecognizer Command="{Binding GoNotificationsCommand}"/></VerticalStackLayout.GestureRecognizers></VerticalStackLayout>
+    </Grid>
+  </Border>
+
+  <Grid ColumnDefinitions="*,Auto">
+    <Label Text="Recent activity" Style="{StaticResource SectionTitle}"/>
+    <Label Grid.Column="1" Text="View all" TextColor="{StaticResource Primary}" FontSize="13"><Label.GestureRecognizers><TapGestureRecognizer Command="{Binding GoTransactionsCommand}"/></Label.GestureRecognizers></Label>
+  </Grid>
+  <Border Style="{StaticResource CardBorder}" Padding="16,6">
+    <CollectionView ItemsSource="{Binding RecentTransactions}" SelectionMode="None">
+      <CollectionView.EmptyView><Label Text="No recent transactions." Style="{StaticResource Muted}" Padding="0,14"/></CollectionView.EmptyView>
+      <CollectionView.ItemTemplate><DataTemplate>
+        <Grid Padding="0,12" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+          <Border Style="{StaticResource IconTile}" WidthRequest="42" HeightRequest="42"><Border.StrokeShape><RoundRectangle CornerRadius="21"/></Border.StrokeShape><Image Source="{Binding Icon}" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"/></Border>
+          <VerticalStackLayout Grid.Column="1" VerticalOptions="Center"><Label Text="{Binding Title}" LineBreakMode="TailTruncation"/><Label Text="{Binding Subtitle}" Style="{StaticResource Muted}" FontSize="12" LineBreakMode="TailTruncation"/></VerticalStackLayout>
+          <Label Grid.Column="2" Text="{Binding AmountDisplay}" FontFamily="OpenSansSemibold" VerticalOptions="Center"><Label.Triggers><DataTrigger TargetType="Label" Binding="{Binding IsCredit}" Value="True"><Setter Property="TextColor" Value="{StaticResource Success}"/></DataTrigger></Label.Triggers></Label>
+        </Grid>
+      </DataTemplate></CollectionView.ItemTemplate>
+    </CollectionView>
+  </Border>
+  <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+</VerticalStackLayout></ScrollView></ContentPage>

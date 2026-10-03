@@ -1,0 +1,25 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="UBee.App.Views.BeneficiariesPage" Title="Favourites">
+<ScrollView><VerticalStackLayout Padding="18,16,18,24" Spacing="14">
+  <Label Text="Favourites are saved on this device only. Tap one on the Send screen to fill in the account number." Style="{StaticResource Muted}"/>
+  <Border Style="{StaticResource CardBorder}">
+    <VerticalStackLayout Spacing="10">
+      <Border Style="{StaticResource FieldBorder}"><Entry Text="{Binding Name}" Placeholder="Name"/></Border>
+      <Border Style="{StaticResource FieldBorder}"><Entry Text="{Binding AccountNumber}" Placeholder="10-digit account number" Keyboard="Numeric" MaxLength="10"/></Border>
+      <Button Text="Save to favourites" Style="{StaticResource PrimaryButton}" Command="{Binding AddCommand}"/>
+    </VerticalStackLayout>
+  </Border>
+  <Label Text="{Binding SuccessMessage}" TextColor="{StaticResource Success}" IsVisible="{Binding HasSuccess}"/>
+  <Label Text="Your favourites" Style="{StaticResource SectionTitle}"/>
+  <CollectionView ItemsSource="{Binding Items}" SelectionMode="None">
+    <CollectionView.EmptyView><Label Text="No saved beneficiaries." Style="{StaticResource Muted}"/></CollectionView.EmptyView>
+    <CollectionView.ItemTemplate><DataTemplate>
+      <Border Style="{StaticResource CardBorder}" Padding="14" Margin="0,5">
+        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+          <Border Style="{StaticResource IconTile}" WidthRequest="44" HeightRequest="44"><Border.StrokeShape><RoundRectangle CornerRadius="22"/></Border.StrokeShape><Image Source="ic_star_fill.svg" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"/></Border>
+          <VerticalStackLayout Grid.Column="1" VerticalOptions="Center"><Label Text="{Binding Name}" FontFamily="OpenSansSemibold"/><Label Text="{Binding AccountNumber}" Style="{StaticResource Muted}"/></VerticalStackLayout>
+          <ImageButton Grid.Column="2" Source="ic_trash.svg" WidthRequest="22" HeightRequest="22" BackgroundColor="Transparent" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RemoveCommand}" CommandParameter="{Binding .}"/>
+        </Grid>
+      </Border>
+    </DataTemplate></CollectionView.ItemTemplate>
+  </CollectionView>
+</VerticalStackLayout></ScrollView></ContentPage>

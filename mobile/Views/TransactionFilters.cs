@@ -1,0 +1,1 @@
+namespace UBee.App.Views; public static class TransactionFilters { public static string[] Types => ["all","transfer","deposit","payout","refund"]; public static string[] Statuses => ["all","pending","successful","failed","completed","settled"]; }

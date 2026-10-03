@@ -1,0 +1,1 @@
+using UBee.App.ViewModels; namespace UBee.App.Views; public partial class KycPage:ContentPage{readonly KycViewModel vm;public KycPage(KycViewModel vm){InitializeComponent();this.vm=vm;BindingContext=vm;}protected override async void OnAppearing(){base.OnAppearing();await vm.LoadAsync();}}
