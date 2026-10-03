@@ -37,6 +37,9 @@ public static class CrashLogger
 
     private static readonly object Gate = new();
     private static readonly LinkedList<string> Crumbs = new();
+    /// <summary>Optional platform hook that receives every formatted entry (Android: copies it to logcat, tag UBEE-LOG).</summary>
+    public static Action<LogLevel2, string>? Echo { get; set; }
+
     private static bool _handlersInstalled;
     private static bool _configured;
     private static string? _logDir;
@@ -177,6 +180,7 @@ public static class CrashLogger
             if (_logDir is null) return;
 
             var entry = Format(level, source, message, ex, context, extra);
+            try { Echo?.Invoke(level, entry); } catch { }   // logcat copy first: survives even if file I/O fails
 
             lock (Gate)
             {
