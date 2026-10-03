@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json.Serialization;
 
 namespace UBee.App.Models;
 
@@ -6,6 +7,7 @@ public sealed record TransferRequest(string AccountNumber, decimal Amount, strin
 public sealed record TransferResponse(bool Status, string? Message, bool Duplicate, List<TransactionDto>? Data);
 public sealed class TransactionDto
 {
+    [JsonPropertyName("_id")]
     public string? Id { get; set; }
     public DateTimeOffset? CreatedAt { get; set; }
     public string? Type { get; set; }

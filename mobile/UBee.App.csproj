@@ -28,5 +28,6 @@
 </ItemGroup>
 <ItemGroup>
   <MauiFont Include="Resources\Fonts\*" />
+  <MauiImage Include="Resources\Images\*" />
 </ItemGroup>
 </Project>

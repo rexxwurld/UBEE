@@ -81,8 +81,10 @@ public partial class TransactionsViewModel : ViewModelBase
         await Shell.Current.GoToAsync("transaction-details", new Dictionary<string, object> { ["tx"] = tx });
     }
 
+    // Server values: type is "debit"/"credit" (IsCredit), status is success/pending/failed (StatusKind).
     private bool Matches(TransactionDto x) =>
-        (TypeFilter == "all" || x.Type == TypeFilter) && (StatusFilter == "all" || x.Status == StatusFilter);
+        (TypeFilter == "all" || (TypeFilter == "received" ? x.IsCredit : !x.IsCredit))
+        && (StatusFilter == "all" || x.StatusKind == StatusFilter);
 
     // Adds to the existing month groups instead of rebuilding, so paging in more items doesn't jump the list back to the top.
     private void Append(IEnumerable<TransactionDto> items)
