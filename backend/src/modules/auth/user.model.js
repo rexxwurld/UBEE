@@ -69,9 +69,9 @@ const userSchema = new mongoose.Schema({
     // being used to open multiple accounts, which duplicate plaintext
     // storage alone wouldn't give you (AES-GCM output isn't deterministic,
     // so it can't back a uniqueness check by itself).
-    bvnHash: { type: String, default: null, unique: true, sparse: true },
+    bvnHash: { type: String, unique: true, sparse: true },
     bvnEncrypted: { type: String, default: null },
-    ninHash: { type: String, default: null, unique: true, sparse: true },
+    ninHash: { type: String, unique: true, sparse: true },
     ninEncrypted: { type: String, default: null },
 
     dateOfBirth: { type: Date, default: null },
