@@ -10,6 +10,7 @@ namespace UBee.App
     {
         protected override void OnCreate(Bundle? savedInstanceState)
         {
+            AndroidCrashLogSetup.Initialize(this); // no-op if Application.AttachBaseContext already succeeded
             CrashLogger.Breadcrumb("MainActivity.OnCreate begin");
             base.OnCreate(savedInstanceState);
             CrashLogger.Breadcrumb("MainActivity.OnCreate end");

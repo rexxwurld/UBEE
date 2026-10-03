@@ -18,7 +18,6 @@ internal static class AndroidCrashLogSetup
     public static void Initialize(Context app)
     {
         if (_done) return;
-        _done = true;
         try
         {
             var privateDir = Path.Combine(app.FilesDir!.AbsolutePath, "U-BEE", "Logs");
@@ -49,6 +48,7 @@ internal static class AndroidCrashLogSetup
             CrashLogger.Info("App process started", new Dictionary<string, string?> { ["Private log dir"] = privateDir });
             CrashLogger.Breadcrumb("Application.AttachBaseContext: logger ready");
             CrashLogger.SyncMirrorIfNeeded();
+            _done = true; // only after success, so MainActivity.OnCreate can retry a failed early init
         }
         catch { /* never block app start because of logging */ }
     }
@@ -82,12 +82,12 @@ internal static class AndroidCrashLogSetup
 /// </summary>
 internal sealed class AndroidPublicLogMirror : IPublicLogMirror
 {
-    private const string RelativePath = "Documents/U-BEE/Logs/";
     private readonly Context _ctx;
 
     public AndroidPublicLogMirror(Context ctx) => _ctx = ctx;
 
-    public string Location => "Internal storage/Documents/U-BEE/Logs/";
+    private string _status = "Documents/U-BEE/Logs (not written yet)";
+    public string Location => _status;
 
     public bool Mirror(string publicFileName, string privateFilePath)
     {
@@ -102,14 +102,34 @@ internal sealed class AndroidPublicLogMirror : IPublicLogMirror
 
     private bool MirrorViaMediaStore(string fileName, string privatePath)
     {
+        // 1) preferred: Documents/U-BEE/Logs   2) fallback: Download/U-BEE/Logs
+        string? err1 = null, err2 = null;
+        try
+        {
+            if (WriteViaMediaStore(MediaStore.Files.GetContentUri("external"), "Documents/U-BEE/Logs/", fileName, privatePath))
+            { _status = "Documents/U-BEE/Logs"; return true; }
+        }
+        catch (Exception ex) { err1 = ex.GetType().Name + ": " + ex.Message; }
+
+        try
+        {
+            if (WriteViaMediaStore(MediaStore.Downloads.ExternalContentUri, "Download/U-BEE/Logs/", fileName, privatePath))
+            { _status = "Download/U-BEE/Logs (Documents failed: " + (err1 ?? "null uri") + ")"; return true; }
+        }
+        catch (Exception ex) { err2 = ex.GetType().Name + ": " + ex.Message; }
+
+        _status = "FAILED. Documents: " + (err1 ?? "null uri") + " | Download: " + (err2 ?? "null uri");
+        return false;
+    }
+
+    private bool WriteViaMediaStore(Android.Net.Uri? collection, string relativePath, string fileName, string privatePath)
+    {
         var resolver = _ctx.ContentResolver;
-        if (resolver is null) return false;
-        var collection = MediaStore.Files.GetContentUri("external");
-        if (collection is null) return false;
+        if (resolver is null || collection is null) return false;
 
         Android.Net.Uri? uri = null;
         using (var cursor = resolver.Query(collection, new[] { "_id" },
-                   "_display_name=? AND relative_path=?", new[] { fileName, RelativePath }, null))
+                   "_display_name=? AND relative_path=?", new[] { fileName, relativePath }, null))
         {
             if (cursor != null && cursor.MoveToFirst())
                 uri = ContentUris.WithAppendedId(collection, cursor.GetLong(0));
@@ -120,7 +140,7 @@ internal sealed class AndroidPublicLogMirror : IPublicLogMirror
             var values = new ContentValues();
             values.Put("_display_name", fileName);
             values.Put("mime_type", "text/plain");
-            values.Put("relative_path", RelativePath);
+            values.Put("relative_path", relativePath);
             uri = resolver.Insert(collection, values);
         }
         if (uri is null) return false;
