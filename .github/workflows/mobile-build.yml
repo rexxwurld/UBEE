@@ -39,17 +39,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Select Xcode 27
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: "27.0"
-
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "10.0.x"
+          dotnet-version: "10.0.401"
 
-      - name: Install MAUI workload
-        run: dotnet workload install maui --source https://api.nuget.org/v3/index.json
+      # Pinned: workload set 10.0.401 has iOS 26.5.10318 (needs Xcode 26.6,
+      # which the runner has). Newer set 10.0.401.1 has iOS 27.0 (needs Xcode 27).
+      # Remove the --version pin once the runner image ships Xcode 27.
+      - name: Install MAUI iOS workload
+        run: dotnet workload install maui-ios --version 10.0.401 --source https://api.nuget.org/v3/index.json
 
       - name: Restore
         run: dotnet restore mobile/UBee.App.csproj
