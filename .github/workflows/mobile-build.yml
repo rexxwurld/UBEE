@@ -47,7 +47,7 @@ jobs:
       # which the runner has). Newer set 10.0.401.1 has iOS 27.0 (needs Xcode 27).
       # Remove the --version pin once the runner image ships Xcode 27.
       - name: Install MAUI iOS workload
-        run: dotnet workload install maui-ios --version 10.0.401 --source https://api.nuget.org/v3/index.json
+        run: dotnet workload install maui --version 10.0.401 --source https://api.nuget.org/v3/index.json
 
       - name: Restore
         run: dotnet restore mobile/UBee.App.csproj
