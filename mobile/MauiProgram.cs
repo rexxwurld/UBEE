@@ -10,7 +10,7 @@ public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
-        // Idempotent: Android already installed these in MainApplication.AttachBaseContext; this covers other platforms.
+        // Idempotent: Android already installed these in MainApplication.OnCreate; this covers other platforms.
         CrashLogger.InstallGlobalHandlers();
         CrashLogger.Breadcrumb("MauiProgram.CreateMauiApp begin");
 
