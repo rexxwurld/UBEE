@@ -45,15 +45,17 @@ exports.lookup = async (req, res) => {
             });
         }
 
-        const wallet = await Wallet.findOne({
-            accountNumber,
-            status: { $ne: "deactivated" }
-        }).populate({
-            path: "userId",
-            select: "fullname accountState"
-        });
+        const wallet = await Wallet.findOne({ accountNumber });
 
-        const owner = wallet?.userId;
+        if (!wallet || !wallet.userId) {
+            return res.status(404).json({
+                status: false,
+                message: "account_not_found"
+            });
+        }
+
+        const owner = await User.findById(wallet.userId)
+            .select("fullname accountState");
 
         if (!owner || owner.accountState !== "active") {
             return res.status(404).json({
