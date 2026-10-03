@@ -17,6 +17,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("notifications", typeof(NotificationsPage));
         Routing.RegisterRoute("profile", typeof(ProfilePage));
         Routing.RegisterRoute("transfer-bank", typeof(BankTransferPage));
+        Routing.RegisterRoute("transaction-details", typeof(TransactionDetailsPage));
         Navigated += OnNavigated;
     }
 
