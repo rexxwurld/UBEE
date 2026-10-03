@@ -8,7 +8,7 @@ using UBee.App.Services.Logging;
 namespace UBee.App;
 
 /// <summary>
-/// Android-specific bootstrap for <see cref="CrashLogger"/>. Called from MainApplication.AttachBaseContext,
+/// Android-specific bootstrap for <see cref="CrashLogger"/>. Called from MainApplication.OnCreate,
 /// i.e. before MAUI, DI or any activity exists, so startup crashes are captured too.
 /// </summary>
 internal static class AndroidCrashLogSetup
@@ -32,6 +32,7 @@ internal static class AndroidCrashLogSetup
             var device = $"Android {Build.VERSION.Release} (API {(int)Build.VERSION.SdkInt}) | {Build.Manufacturer} {Build.Model} | {abi}";
 
             CrashLogger.Configure(privateDir, appInfo, device, new AndroidPublicLogMirror(app));
+            CrashLogger.Echo = EchoToLogcat;
             CrashLogger.InstallGlobalHandlers();
 
             // Exceptions that surface through Android.Runtime (callbacks from Java into managed code).
@@ -46,11 +47,33 @@ internal static class AndroidCrashLogSetup
                 new JavaUncaughtHandler(Java.Lang.Thread.DefaultUncaughtExceptionHandler);
 
             CrashLogger.Info("App process started", new Dictionary<string, string?> { ["Private log dir"] = privateDir });
-            CrashLogger.Breadcrumb("Application.AttachBaseContext: logger ready");
+            CrashLogger.Breadcrumb("Application.OnCreate: logger ready");
             CrashLogger.SyncMirrorIfNeeded();
             _done = true; // only after success, so MainActivity.OnCreate can retry a failed early init
         }
-        catch { /* never block app start because of logging */ }
+        catch (Exception ex)
+        {
+            // Never block app start because of logging, but do not fail silently either.
+            try { Android.Util.Log.Error("UBEE-LOG", "Logger init failed: " + ex); } catch { }
+        }
+    }
+
+    private static void EchoToLogcat(LogLevel2 level, string text)
+    {
+        var prio = level switch
+        {
+            LogLevel2.Info => Android.Util.LogPriority.Info,
+            LogLevel2.Warning => Android.Util.LogPriority.Warn,
+            _ => Android.Util.LogPriority.Error,
+        };
+        // logcat truncates long messages, so send it in line-based chunks.
+        var chunk = new System.Text.StringBuilder();
+        foreach (var line in text.Split('\n'))
+        {
+            if (chunk.Length + line.Length > 3000) { Android.Util.Log.WriteLine(prio, "UBEE-LOG", chunk.ToString()); chunk.Clear(); }
+            chunk.AppendLine(line.TrimEnd('\r'));
+        }
+        if (chunk.Length > 0) Android.Util.Log.WriteLine(prio, "UBEE-LOG", chunk.ToString());
     }
 
     private sealed class JavaUncaughtHandler : Java.Lang.Object, Java.Lang.Thread.IUncaughtExceptionHandler
@@ -97,7 +120,11 @@ internal sealed class AndroidPublicLogMirror : IPublicLogMirror
                 ? MirrorViaMediaStore(publicFileName, privateFilePath)
                 : MirrorLegacy(publicFileName, privateFilePath);
         }
-        catch { return false; }
+        catch (Exception ex)
+        {
+            try { Android.Util.Log.Warn("UBEE-LOG", "Public log copy exception: " + ex); } catch { }
+            return false;
+        }
     }
 
     private bool MirrorViaMediaStore(string fileName, string privatePath)
@@ -119,6 +146,7 @@ internal sealed class AndroidPublicLogMirror : IPublicLogMirror
         catch (Exception ex) { err2 = ex.GetType().Name + ": " + ex.Message; }
 
         _status = "FAILED. Documents: " + (err1 ?? "null uri") + " | Download: " + (err2 ?? "null uri");
+        try { Android.Util.Log.Warn("UBEE-LOG", "Public log copy " + _status); } catch { }
         return false;
     }
 

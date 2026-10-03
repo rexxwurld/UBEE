@@ -1,5 +1,4 @@
 using Android.App;
-using Android.Content;
 using Android.Runtime;
 
 namespace UBee.App
@@ -9,11 +8,12 @@ namespace UBee.App
     {
         public MainApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership) { }
 
-        // Earliest managed hook that has a Context: runs before MauiProgram / DI / any activity.
-        protected override void AttachBaseContext(Context? @base)
+        // Earliest SAFE managed hook: the .NET runtime is not running yet during attachBaseContext
+        // (overriding it crashes with UnsatisfiedLinkError), but it is ready by OnCreate, before MAUI starts.
+        public override void OnCreate()
         {
-            base.AttachBaseContext(@base);
-            if (@base is not null) AndroidCrashLogSetup.Initialize(this);
+            AndroidCrashLogSetup.Initialize(this);
+            base.OnCreate();
         }
 
         protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
