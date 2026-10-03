@@ -1,18 +1,109 @@
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:UBee.App.Views" x:Class="UBee.App.Views.TransactionsPage" Title="Transactions">
-<Grid RowDefinitions="Auto,Auto,*">
-  <VerticalStackLayout Padding="18,16,18,4"><Label Text="Transactions" Style="{StaticResource PageTitle}"/></VerticalStackLayout>
-  <Grid Grid.Row="1" Padding="18,8" ColumnDefinitions="*,*" ColumnSpacing="10">
-    <Border Style="{StaticResource FieldBorder}"><Picker Title="Type" ItemsSource="{Binding Source={x:Static local:TransactionFilters.Types}}" SelectedItem="{Binding TypeFilter}"/></Border>
-    <Border Grid.Column="1" Style="{StaticResource FieldBorder}"><Picker Title="Status" ItemsSource="{Binding Source={x:Static local:TransactionFilters.Statuses}}" SelectedItem="{Binding StatusFilter}"/></Border>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:app="clr-namespace:UBee.App"
+             xmlns:local="clr-namespace:UBee.App.Views"
+             xmlns:vm="clr-namespace:UBee.App.ViewModels"
+             x:Class="UBee.App.Views.TransactionsPage"
+             Title="Transactions"
+             BackgroundColor="White">
+  <ContentPage.Resources>
+    <app:TitleCaseConverter x:Key="TitleCase"/>
+  </ContentPage.Resources>
+
+  <Grid RowDefinitions="Auto,Auto,*">
+
+    <!-- Filters -->
+    <Grid Padding="18,12,18,10" ColumnDefinitions="*,*" ColumnSpacing="12">
+      <Border Style="{StaticResource FieldBorder}">
+        <Picker Title="All Categories"
+                ItemsSource="{Binding Source={x:Static local:TransactionFilters.Types}}"
+                ItemDisplayBinding="{Binding ., Converter={StaticResource TitleCase}, ConverterParameter='All Categories'}"
+                SelectedItem="{Binding TypeFilter}"/>
+      </Border>
+      <Border Grid.Column="1" Style="{StaticResource FieldBorder}">
+        <Picker Title="All Status"
+                ItemsSource="{Binding Source={x:Static local:TransactionFilters.Statuses}}"
+                ItemDisplayBinding="{Binding ., Converter={StaticResource TitleCase}, ConverterParameter='All Status'}"
+                SelectedItem="{Binding StatusFilter}"/>
+      </Border>
+    </Grid>
+
+    <Label Grid.Row="1" Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}"
+           TextColor="{StaticResource Danger}" FontSize="13" Padding="18,0,18,8"/>
+
+    <!-- Transactions, grouped by month -->
+    <CollectionView Grid.Row="2"
+                    ItemsSource="{Binding Groups}" IsGrouped="True"
+                    SelectionMode="None"
+                    RemainingItemsThreshold="3"
+                    RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
+      <CollectionView.EmptyView>
+        <Label Text="No transactions yet." Style="{StaticResource Muted}" HorizontalOptions="Center" Margin="0,40"/>
+      </CollectionView.EmptyView>
+
+      <CollectionView.GroupHeaderTemplate>
+        <DataTemplate>
+          <VerticalStackLayout Padding="18,14,18,10" Spacing="3" BackgroundColor="{StaticResource SkyMist}">
+            <Label Text="{Binding Month}" Style="{StaticResource SectionTitle}"/>
+            <HorizontalStackLayout Spacing="18">
+              <Label Text="{Binding InDisplay, StringFormat='In: {0}'}" Style="{StaticResource Muted}" FontSize="12"/>
+              <Label Text="{Binding OutDisplay, StringFormat='Out: {0}'}" Style="{StaticResource Muted}" FontSize="12"/>
+            </HorizontalStackLayout>
+          </VerticalStackLayout>
+        </DataTemplate>
+      </CollectionView.GroupHeaderTemplate>
+
+      <CollectionView.ItemTemplate>
+        <DataTemplate>
+          <VerticalStackLayout BackgroundColor="White">
+            <Grid Padding="18,14" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+              <Border Style="{StaticResource IconTile}" WidthRequest="44" HeightRequest="44" VerticalOptions="Center">
+                <Border.StrokeShape><RoundRectangle CornerRadius="22"/></Border.StrokeShape>
+                <Image Source="{Binding Icon}" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+              </Border>
+
+              <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="3">
+                <Label Text="{Binding Headline}" FontSize="15" LineBreakMode="TailTruncation"/>
+                <Label Text="{Binding TimeDisplay}" Style="{StaticResource Muted}" FontSize="12"/>
+              </VerticalStackLayout>
+
+              <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" Spacing="5">
+                <Label Text="{Binding AmountDisplay}" FontFamily="OpenSansSemibold" FontSize="15" HorizontalTextAlignment="End">
+                  <Label.Triggers>
+                    <DataTrigger TargetType="Label" Binding="{Binding IsCredit}" Value="True">
+                      <Setter Property="TextColor" Value="{StaticResource Success}"/>
+                    </DataTrigger>
+                  </Label.Triggers>
+                </Label>
+                <Border StrokeThickness="0" Padding="8,2" BackgroundColor="#E8F5EF" HorizontalOptions="End">
+                  <Border.StrokeShape><RoundRectangle CornerRadius="6"/></Border.StrokeShape>
+                  <Border.Triggers>
+                    <DataTrigger TargetType="Border" Binding="{Binding StatusKind}" Value="pending"><Setter Property="BackgroundColor" Value="#FDF3E1"/></DataTrigger>
+                    <DataTrigger TargetType="Border" Binding="{Binding StatusKind}" Value="failed"><Setter Property="BackgroundColor" Value="#FCEBEB"/></DataTrigger>
+                  </Border.Triggers>
+                  <Label Text="{Binding StatusLabel}" FontSize="11" TextColor="{StaticResource Success}">
+                    <Label.Triggers>
+                      <DataTrigger TargetType="Label" Binding="{Binding StatusKind}" Value="pending"><Setter Property="TextColor" Value="#B7791F"/></DataTrigger>
+                      <DataTrigger TargetType="Label" Binding="{Binding StatusKind}" Value="failed"><Setter Property="TextColor" Value="{StaticResource Danger}"/></DataTrigger>
+                    </Label.Triggers>
+                  </Label>
+                </Border>
+              </VerticalStackLayout>
+
+              <!-- Tap anywhere on the row to open the details -->
+              <Grid.GestureRecognizers>
+                <TapGestureRecognizer
+                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TransactionsViewModel}}, Path=OpenDetailsCommand}"
+                    CommandParameter="{Binding .}"/>
+              </Grid.GestureRecognizers>
+            </Grid>
+            <BoxView HeightRequest="1" Color="{StaticResource Border}" Margin="74,0,0,0"/>
+          </VerticalStackLayout>
+        </DataTemplate>
+      </CollectionView.ItemTemplate>
+    </CollectionView>
+
+    <ActivityIndicator Grid.Row="2" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
+                       Color="{StaticResource Primary}" HorizontalOptions="Center" VerticalOptions="Start" Margin="0,24"/>
   </Grid>
-  <CollectionView Grid.Row="2" ItemsSource="{Binding FilteredTransactions}" SelectionMode="None" RemainingItemsThreshold="3" RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
-    <CollectionView.EmptyView><Label Text="No transactions yet." Style="{StaticResource Muted}" HorizontalOptions="Center" Margin="0,40"/></CollectionView.EmptyView>
-    <CollectionView.ItemTemplate><DataTemplate>
-      <Border Style="{StaticResource CardBorder}" Padding="14,2" Margin="18,5"><Grid Padding="0,12" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-          <Border Style="{StaticResource IconTile}" WidthRequest="42" HeightRequest="42"><Border.StrokeShape><RoundRectangle CornerRadius="21"/></Border.StrokeShape><Image Source="{Binding Icon}" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"/></Border>
-          <VerticalStackLayout Grid.Column="1" VerticalOptions="Center"><Label Text="{Binding Title}" LineBreakMode="TailTruncation"/><Label Text="{Binding Subtitle}" Style="{StaticResource Muted}" FontSize="12" LineBreakMode="TailTruncation"/></VerticalStackLayout>
-          <Label Grid.Column="2" Text="{Binding AmountDisplay}" FontFamily="OpenSansSemibold" VerticalOptions="Center"><Label.Triggers><DataTrigger TargetType="Label" Binding="{Binding IsCredit}" Value="True"><Setter Property="TextColor" Value="{StaticResource Success}"/></DataTrigger></Label.Triggers></Label>
-        </Grid></Border>
-    </DataTemplate></CollectionView.ItemTemplate>
-  </CollectionView>
-</Grid></ContentPage>
+</ContentPage>

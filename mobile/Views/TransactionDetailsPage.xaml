@@ -1,0 +1,98 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="UBee.App.Views.TransactionDetailsPage"
+             Title="Transaction Details">
+  <ScrollView>
+    <VerticalStackLayout Padding="18,24,18,32" Spacing="22">
+
+      <!-- Amount + status -->
+      <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+        <Border Style="{StaticResource IconTile}" WidthRequest="60" HeightRequest="60">
+          <Border.StrokeShape><RoundRectangle CornerRadius="30"/></Border.StrokeShape>
+          <Image Source="{Binding Icon}" WidthRequest="28" HeightRequest="28" HorizontalOptions="Center" VerticalOptions="Center"/>
+        </Border>
+        <Label Text="{Binding Headline}" Style="{StaticResource Muted}" HorizontalTextAlignment="Center" FontSize="14"/>
+        <Label Text="{Binding DetailAmount}" FontFamily="OpenSansSemibold" FontSize="32" HorizontalTextAlignment="Center">
+          <Label.Triggers>
+            <DataTrigger TargetType="Label" Binding="{Binding IsCredit}" Value="True">
+              <Setter Property="TextColor" Value="{StaticResource Success}"/>
+            </DataTrigger>
+          </Label.Triggers>
+        </Label>
+        <Border StrokeThickness="0" Padding="12,4" BackgroundColor="#E8F5EF" HorizontalOptions="Center">
+          <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+          <Border.Triggers>
+            <DataTrigger TargetType="Border" Binding="{Binding StatusKind}" Value="pending"><Setter Property="BackgroundColor" Value="#FDF3E1"/></DataTrigger>
+            <DataTrigger TargetType="Border" Binding="{Binding StatusKind}" Value="failed"><Setter Property="BackgroundColor" Value="#FCEBEB"/></DataTrigger>
+          </Border.Triggers>
+          <Label Text="{Binding StatusLabel}" FontSize="12" TextColor="{StaticResource Success}">
+            <Label.Triggers>
+              <DataTrigger TargetType="Label" Binding="{Binding StatusKind}" Value="pending"><Setter Property="TextColor" Value="#B7791F"/></DataTrigger>
+              <DataTrigger TargetType="Label" Binding="{Binding StatusKind}" Value="failed"><Setter Property="TextColor" Value="{StaticResource Danger}"/></DataTrigger>
+            </Label.Triggers>
+          </Label>
+        </Border>
+      </VerticalStackLayout>
+
+      <!-- Details card -->
+      <Border Style="{StaticResource CardBorder}">
+        <VerticalStackLayout Spacing="18">
+
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+            <Label Text="Transaction Type" Style="{StaticResource Muted}"/>
+            <Label Grid.Column="1" Text="{Binding TypeDisplay}" FontSize="14" HorizontalTextAlignment="End"/>
+          </Grid>
+
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" IsVisible="{Binding HasCounterpartyName}">
+            <Label Text="{Binding CounterpartyLabel}" Style="{StaticResource Muted}"/>
+            <Label Grid.Column="1" Text="{Binding CounterpartyName}" FontSize="14" HorizontalTextAlignment="End"/>
+          </Grid>
+
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" IsVisible="{Binding HasCounterpartyAccount}">
+            <Label Text="Account Number" Style="{StaticResource Muted}"/>
+            <Label Grid.Column="1" Text="{Binding CounterpartyAccount}" FontSize="14" HorizontalTextAlignment="End"/>
+          </Grid>
+
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" IsVisible="{Binding HasBank}">
+            <Label Text="Bank" Style="{StaticResource Muted}"/>
+            <Label Grid.Column="1" Text="{Binding Bank}" FontSize="14" HorizontalTextAlignment="End"/>
+          </Grid>
+
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" IsVisible="{Binding HasDescription}">
+            <Label Text="Description" Style="{StaticResource Muted}"/>
+            <Label Grid.Column="1" Text="{Binding Description}" FontSize="14" HorizontalTextAlignment="End"/>
+          </Grid>
+
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" IsVisible="{Binding ShowFee}">
+            <Label Text="Fee" Style="{StaticResource Muted}"/>
+            <Label Grid.Column="1" Text="{Binding FeeDisplay}" FontSize="14" HorizontalTextAlignment="End"/>
+          </Grid>
+
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" IsVisible="{Binding ShowFee}">
+            <Label Text="Total Debited" Style="{StaticResource Muted}"/>
+            <Label Grid.Column="1" Text="{Binding TotalDisplay}" FontFamily="OpenSansSemibold" FontSize="14" HorizontalTextAlignment="End"/>
+          </Grid>
+
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+            <Label Text="Date &amp; Time" Style="{StaticResource Muted}"/>
+            <Label Grid.Column="1" Text="{Binding DateDisplay}" FontSize="14" HorizontalTextAlignment="End"/>
+          </Grid>
+
+          <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+            <Label Text="Transaction No." Style="{StaticResource Muted}"/>
+            <Label Grid.Column="1" Text="{Binding Id}" FontSize="12" HorizontalTextAlignment="End" LineBreakMode="MiddleTruncation" VerticalOptions="Center"/>
+            <HorizontalStackLayout Grid.Column="2" Spacing="4" VerticalOptions="Center">
+              <Image Source="ic_copy.svg" WidthRequest="14" HeightRequest="14" VerticalOptions="Center"/>
+              <Label x:Name="CopyLabel" Text="Copy" FontSize="12" TextColor="{StaticResource Primary}" VerticalOptions="Center"/>
+              <HorizontalStackLayout.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnCopyTapped"/>
+              </HorizontalStackLayout.GestureRecognizers>
+            </HorizontalStackLayout>
+          </Grid>
+
+        </VerticalStackLayout>
+      </Border>
+
+    </VerticalStackLayout>
+  </ScrollView>
+</ContentPage>
