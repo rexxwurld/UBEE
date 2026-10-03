@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using UBee.App.Models;
+using UBee.App.Services.Logging;
 
 namespace UBee.App.Services;
 
@@ -54,15 +55,21 @@ public sealed class ApiClient : IApiClient
         {
             return ApiResult<T>.Fail("The request timed out. Check your connection and try again.", "timeout");
         }
-        catch (HttpRequestException)
+        catch (HttpRequestException ex)
         {
+            CrashLogger.Warning("API network error", ex, Ctx(method, endpoint));
             return ApiResult<T>.Fail("Unable to reach U-BEE right now. Check your internet connection.", "network_error");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            CrashLogger.Error(ex, "API client error", Ctx(method, endpoint));
             return ApiResult<T>.Fail("Something went wrong while processing the request.", "client_error");
         }
     }
+
+    // Non-sensitive context only: HTTP verb + path (query string and bodies are never logged).
+    private static Dictionary<string, string?> Ctx(HttpMethod method, string endpoint)
+        => new() { ["Request"] = $"{method.Method} {endpoint.Split('?')[0]}" };
 
     private async Task AddBearerAsync(HttpRequestMessage request)
     {

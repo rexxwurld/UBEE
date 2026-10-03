@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Net.Http.Json;
 using UBee.App.Models;
+using UBee.App.Services.Logging;
 
 namespace UBee.App.Services;
 
@@ -34,7 +35,7 @@ public sealed class AuthService : IAuthService
                 await SaveTokensAsync(data.AccessToken!, data.RefreshToken!);
             return ApiResult<LoginResponse>.Ok(data);
         }
-        catch (Exception ex) { return ApiResult<LoginResponse>.Fail(ex is HttpRequestException ? "Unable to reach U-BEE." : "Login could not be completed.", "login_error"); }
+        catch (Exception ex) { CrashLogger.Error(ex, "Login failed (exception)"); return ApiResult<LoginResponse>.Fail(ex is HttpRequestException ? "Unable to reach U-BEE." : "Login could not be completed.", "login_error"); }
     }
 
     public async Task<ApiResult<UserDto>> RegisterAsync(RegisterRequest request, CancellationToken ct = default)
@@ -47,7 +48,7 @@ public sealed class AuthService : IAuthService
             var wrapper = JsonSerializer.Deserialize<RegisterResponse>(raw, JsonDefaults.Options);
             return wrapper?.User is null ? ApiResult<UserDto>.Fail("Invalid registration response.", "invalid_response") : ApiResult<UserDto>.Ok(wrapper.User);
         }
-        catch (Exception) { return ApiResult<UserDto>.Fail("Registration could not be completed.", "registration_error"); }
+        catch (Exception ex) { CrashLogger.Error(ex, "Registration failed (exception)"); return ApiResult<UserDto>.Fail("Registration could not be completed.", "registration_error"); }
     }
 
     public async Task<ApiResult<UserDto>> GetMeAsync(CancellationToken ct = default)
@@ -64,7 +65,7 @@ public sealed class AuthService : IAuthService
             var user = JsonSerializer.Deserialize<UserDto>(raw, JsonDefaults.Options);
             return user is null ? ApiResult<UserDto>.Fail("Invalid profile response.", "invalid_response") : ApiResult<UserDto>.Ok(user);
         }
-        catch (Exception) { return ApiResult<UserDto>.Fail("Could not load your profile.", "profile_error"); }
+        catch (Exception ex) { CrashLogger.Error(ex, "GetMe failed (exception)"); return ApiResult<UserDto>.Fail("Could not load your profile.", "profile_error"); }
     }
 
     public async Task<ApiResult<LoginResponse>> VerifyMfaAsync(string challengeId, string code, CancellationToken ct = default)
@@ -79,7 +80,7 @@ public sealed class AuthService : IAuthService
             await SaveTokensAsync(data.AccessToken, data.RefreshToken);
             return ApiResult<LoginResponse>.Ok(data);
         }
-        catch { return ApiResult<LoginResponse>.Fail("OTP verification could not be completed.", "mfa_error"); }
+        catch (Exception ex) { CrashLogger.Error(ex, "MFA verify failed (exception)"); return ApiResult<LoginResponse>.Fail("OTP verification could not be completed.", "mfa_error"); }
     }
 
     public async Task<bool> RefreshAsync(string refreshToken, CancellationToken ct = default)
@@ -94,7 +95,7 @@ public sealed class AuthService : IAuthService
             await SaveTokensAsync(data.AccessToken, data.RefreshToken);
             return true;
         }
-        catch { return false; }
+        catch (Exception ex) { CrashLogger.Warning("Token refresh failed (exception)", ex); return false; }
     }
 
     public Task<string?> GetAccessTokenAsync() => _secure.GetAsync(AccessKey);
