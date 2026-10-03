@@ -1,4 +1,5 @@
 using UBee.App.Services;
+using UBee.App.Services.Logging;
 using UBee.App.Views;
 
 namespace UBee.App;
@@ -27,8 +28,10 @@ public partial class AppShell : Shell
     if (_initialized) return;
     _initialized = true;
     var hasSession = false;
-    try { hasSession = await _auth.TryRestoreSessionAsync(); } catch { }
-    try { await GoToAsync(hasSession ? "//main/dashboard" : "//login"); } catch { }
+    CrashLogger.Breadcrumb("AppShell: first Navigated, restoring session");
+    try { hasSession = await _auth.TryRestoreSessionAsync(); } catch (Exception ex) { CrashLogger.Error(ex, "TryRestoreSessionAsync failed at startup"); }
+    CrashLogger.Breadcrumb($"AppShell: session restored = {hasSession}");
+    try { await GoToAsync(hasSession ? "//main/dashboard" : "//login"); } catch (Exception ex) { CrashLogger.Error(ex, "Initial navigation failed", new Dictionary<string, string?> { ["Target"] = hasSession ? "//main/dashboard" : "//login" }); }
 }
 
     

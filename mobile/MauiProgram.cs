@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using UBee.App.Services;
+using UBee.App.Services.Logging;
 using UBee.App.ViewModels;
 using UBee.App.Views;
 
@@ -9,6 +10,12 @@ public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
+        // Idempotent: Android already installed these in MainApplication.AttachBaseContext; this covers other platforms.
+        CrashLogger.InstallGlobalHandlers();
+        CrashLogger.Breadcrumb("MauiProgram.CreateMauiApp begin");
+
+        try
+        {
         var builder = MauiApp.CreateBuilder();
         builder.UseMauiApp<App>();
 
@@ -70,6 +77,17 @@ builder.UseMauiApp<App>()
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
-        return builder.Build();
+        // Persistent file logging for every ILogger<T> Warning/Error/Critical.
+        builder.Logging.AddProvider(new FileLoggerProvider());
+
+        var app = builder.Build();
+        CrashLogger.Breadcrumb("MauiProgram.CreateMauiApp end (DI container built)");
+        return app;
+        }
+        catch (Exception ex)
+        {
+            CrashLogger.LogFatal(ex, "MauiProgram.CreateMauiApp (startup failure)");
+            throw;
+        }
     }
 }
