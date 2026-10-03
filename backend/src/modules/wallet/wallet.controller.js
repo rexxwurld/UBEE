@@ -38,15 +38,24 @@ exports.getWallet = async (req, res) => {
 exports.lookup = async (req, res) => {
     try {
         const { accountNumber } = req.params;
+
         if (!/^\d{10}$/.test(accountNumber)) {
-            return res.status(400).json({ status: false, message: "account_number_must_be_10_digits" });
+            return res.status(400).json({
+                status: false,
+                message: "account_number_must_be_10_digits"
+            });
         }
 
-        const wallet = await Wallet.findOne({ accountNumber });
-        const owner = wallet?.userId ? await User.findById(wallet.userId).select("fullname accountState") : null;
+        // Account number = Nigerian phone number without the leading 0.
+        const owner = await User.findOne({
+            phone: `0${accountNumber}`
+        }).select("fullname accountState");
 
         if (!owner || owner.accountState !== "active") {
-            return res.status(404).json({ status: false, message: "account_not_found" });
+            return res.status(404).json({
+                status: false,
+                message: "account_not_found"
+            });
         }
 
         res.json({
@@ -58,6 +67,9 @@ exports.lookup = async (req, res) => {
             }
         });
     } catch (err) {
-        res.status(400).json({ status: false, message: err.message });
+        res.status(400).json({
+            status: false,
+            message: err.message
+        });
     }
 };
