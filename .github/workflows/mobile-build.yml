@@ -32,6 +32,14 @@ jobs:
       - name: Build (Android)
         run: dotnet build mobile/UBee.App.csproj -f net10.0-android -c Release
 
+      - name: Publish APK
+        run: dotnet publish mobile/UBee.App.csproj -f net10.0-android -c Release -p:AndroidPackageFormat=apk -o out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ubee-apk
+          path: out/*.apk
+
   ios:
     if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     runs-on: macos-latest
@@ -54,17 +62,3 @@ jobs:
 
       - name: Build (iOS)
         run: dotnet build mobile/UBee.App.csproj -f net10.0-ios -c Release -p:EnableCodeSigning=false
-
-
-        - name: Publish APK
-        run: dotnet publish mobile/UBee.App.csproj -f net10.0-android -c Release -p:AndroidPackageFormat=apk -o out
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ubee-apk
-          path: out/*.apk
-
-
-
-
-        
